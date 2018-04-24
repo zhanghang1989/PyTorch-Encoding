@@ -40,15 +40,15 @@ class _sum_square(Function):
         input, = ctx.saved_variables
         B, C, H, W = input.data.size()
         with torch.cuda.device_of(input.data):
-            gradInput = Variable(input.data.new().resize_(B, C, H*W).zero_())
+            gradInput = Variable(input.data.new().resize_(B, C, H*W).zero_()
         if isinstance(input.data, torch.cuda.FloatTensor):
             with torch.cuda.device_of(input.data):
                 encoding_lib.Encoding_Float_sum_square_Backward(
-                    gradInput, input.data.view(B, C, -1), gradSum, gradSquare)
+                    gradInput.data, input.data.view(B, C, -1), gradSum.data, gradSquare.data)
         elif isinstance(input.data, torch.cuda.DoubleTensor):
             with torch.cuda.device_of(input.data):
                 encoding_lib.Encoding_Double_sum_square_Backward(
-                    gradInput, input.data.view(B, C, -1), gradSum, gradSquare)
+                    gradInput.data, input.data.view(B, C, -1), gradSum.data, gradSquare.data)
         else:
             raise RuntimeError('Unimplemented data type!')
         return gradInput.view(B, C, H, W)
