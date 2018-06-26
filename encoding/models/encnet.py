@@ -54,16 +54,11 @@ class EncModule(nn.Module):
             encoding.nn.BatchNorm1d(ncodes),
             nn.ReLU(inplace=True),
             encoding.nn.Mean(dim=1))
-            #nn.GroupNorm(1, ncodes),
-            #nn.ReLU(inplace=True),
-            #encoding.nn.View(-1, in_channels*ncodes))
         self.fc = nn.Sequential(
             nn.Linear(in_channels, in_channels),
-            #nn.Linear(in_channels*ncodes, in_channels),
             nn.Sigmoid())
         if self.se_loss:
-            #self.selayer = nn.Linear(in_channels, nclass)
-            self.selayer = nn.Linear(in_channels*ncodes, nclass)
+            self.selayer = nn.Linear(in_channels, nclass)
 
     def forward(self, x):
         en = self.encoding(x)

@@ -11,10 +11,10 @@ _model_sha1 = {name: checksum for checksum, name in [
     ('5be5422ad7cb6a2e5f5a54070d0aa9affe69a9a4', 'resnet101'),
     ('fc8c0b795abf0133700c2d4265d2f9edab7eb6cc', 'fcn_resnet50_ade'),
     ('eeed8e582f0fdccdba8579e7490570adc6d85c7c', 'fcn_resnet50_pcontext'),
-    ('167f05f69df94d4066dad155d1a71dc6493747eb', 'encnet_resnet50_ade'),
+    ('54f70c772505064e30efd1ddd3a14e1759faa363', 'psp_resnet50_ade'),
+    ('558e8904e123813f23dc0347acba85224650fe5f', 'encnet_resnet50_ade'),
     ('7846a2f065e90ce70d268ba8ada1a92251587734', 'encnet_resnet50_pcontext'),
     ('6f7c372259988bc2b6d7fc0007182e7835c31a11', 'encnet_resnet101_pcontext'),
-    ('558e8904e123813f23dc0347acba85224650fe5f', 'psp_resnet50_ade'),
     ]}
 
 encoding_repo_url = 'https://hangzh.s3.amazonaws.com/'
