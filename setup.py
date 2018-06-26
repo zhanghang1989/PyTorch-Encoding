@@ -72,7 +72,7 @@ requirements = [
 ]
 
 setup(
-    name="encoding",
+    name="torch-encoding",
     version=version,
     author="Hang Zhang",
     author_email="zhanghang0704@gmail.com",
