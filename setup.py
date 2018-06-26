@@ -18,7 +18,7 @@ import setuptools.command.install
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
-version = '0.4.3'
+version = '0.4.5'
 try:
     sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], 
         cwd=cwd).decode('ascii').strip()
