@@ -1,4 +1,5 @@
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAContext.h>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -375,7 +376,7 @@ at::Tensor ROIAlignForwardCUDA(
       <<<ROI_GET_BLOCKS(count),
          ROI_CUDA_NUM_THREADS,
          0,
-         at::globalContext().getCurrentCUDAStream()>>>(
+         at::cuda::getCurrentCUDAStream()>>>(
           count,
           input.data<scalar_t>(),
           static_cast<scalar_t>(spatial_scale),
@@ -422,7 +423,7 @@ at::Tensor ROIAlignBackwardCUDA(
       <<<ROI_GET_BLOCKS(count),
          ROI_CUDA_NUM_THREADS,
          0,
-         at::globalContext().getCurrentCUDAStream()>>>(
+         at::cuda::getCurrentCUDAStream()>>>(
           count,
           grad_output.data<scalar_t>(),
           num_rois,
