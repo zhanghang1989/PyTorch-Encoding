@@ -100,8 +100,8 @@ class Encoding(Module):
             X = X.view(B, D, -1).transpose(1, 2).contiguous()
         else:
             raise RuntimeError('Encoding Layer unknown input dims!')
-        # assignment weights NxKxD
-        A = F.softmax(scaledL2(X, self.codewords, self.scale), dim=1)
+        # assignment weights BxNxK
+        A = F.softmax(scaledL2(X, self.codewords, self.scale), dim=2)
         # aggregate
         E = aggregate(A, X, self.codewords)
         return E
@@ -148,8 +148,8 @@ class EncodingDrop(Module):
         else:
             raise RuntimeError('Encoding Layer unknown input dims!')
         self._drop()
-        # assignment weights
-        A = F.softmax(scaledL2(X, self.codewords, self.scale), dim=1)
+        # assignment weights BxNxK
+        A = F.softmax(scaledL2(X, self.codewords, self.scale), dim=2)
         # aggregate
         E = aggregate(A, X, self.codewords)
         self._drop()
