@@ -18,15 +18,14 @@ class ContextSegmentation(BaseDataset):
     BASE_DIR = 'VOCdevkit/VOC2010'
     NUM_CLASS = 59
     def __init__(self, root=os.path.expanduser('~/.encoding/data'), split='train',
-                 mode=None, transform=None, target_transform=None):
+                 mode=None, transform=None, target_transform=None, **kwargs):
         super(ContextSegmentation, self).__init__(
-            root, split, mode, transform, target_transform)
+            root, split, mode, transform, target_transform, **kwargs)
         from detail import Detail
         #from detail import mask
         root = os.path.join(root, self.BASE_DIR)
         annFile = os.path.join(root, 'trainval_merged.json')
         imgDir = os.path.join(root, 'JPEGImages')
-        mask_file = os.path.join(root, self.split+'.pth')
         # training mode
         self.detail = Detail(annFile, imgDir, split)
         self.transform = transform
@@ -40,6 +39,8 @@ class ContextSegmentation(BaseDataset):
             68, 326, 72, 458, 34, 207, 80, 355, 85, 347, 220, 349, 360, 
             98, 187, 104, 105, 366, 189, 368, 113, 115]))
         self._key = np.array(range(len(self._mapping))).astype('uint8')
+        mask_file = os.path.join(root, self.split+'.pth')
+        print('mask_file:', mask_file)
         if os.path.exists(mask_file):
             self.masks = torch.load(mask_file)
         else:
@@ -48,7 +49,6 @@ class ContextSegmentation(BaseDataset):
     def _class_to_index(self, mask):
         # assert the values
         values = np.unique(mask)
-        #assert(values.size > 1)
         for i in range(len(values)):
             assert(values[i] in self._mapping)
         index = np.digitize(mask.ravel(), self._mapping, right=True)
@@ -78,8 +78,6 @@ class ContextSegmentation(BaseDataset):
                 img = self.transform(img)
             return img, os.path.basename(path)
         # convert mask to 60 categories
-        #mask = Image.fromarray(self._class_to_index(
-        #    self.detail.getMask(img_id)))
         mask = self.masks[iid]
         # synchrosized transform
         if self.mode == 'train':
@@ -91,10 +89,8 @@ class ContextSegmentation(BaseDataset):
             mask = self._mask_transform(mask)
         # general resize, normalize and toTensor
         if self.transform is not None:
-            #print("transform for input")
             img = self.transform(img)
         if self.target_transform is not None:
-            #print("transform for label")
             mask = self.target_transform(mask)
         return img, mask
 

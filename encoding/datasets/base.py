@@ -22,6 +22,9 @@ class BaseDataset(data.Dataset):
         self.mode = mode if mode is not None else split
         self.base_size = base_size
         self.crop_size = crop_size
+        if self.mode == 'train':
+            print('BaseDataset: base_size {}, crop_size {}'. \
+                format(base_size, crop_size))
 
     def __getitem__(self, index):
         raise NotImplemented
@@ -33,6 +36,9 @@ class BaseDataset(data.Dataset):
     @property
     def pred_offset(self):
         raise NotImplemented
+
+    def make_pred(self, x):
+        return x + self.pred_offset
 
     def _val_sync_transform(self, img, mask):
         outsize = self.crop_size
@@ -72,10 +78,6 @@ class BaseDataset(data.Dataset):
             ow = int(1.0 * w * oh / h)
         img = img.resize((ow, oh), Image.BILINEAR)
         mask = mask.resize((ow, oh), Image.NEAREST)
-        # random rotate -10~10, mask using NN rotate
-        deg = random.uniform(-10, 10)
-        img = img.rotate(deg, resample=Image.BILINEAR)
-        mask = mask.rotate(deg, resample=Image.NEAREST)
         # pad crop
         if short_size < crop_size:
             padh = crop_size - oh if oh < crop_size else 0

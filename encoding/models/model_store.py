@@ -7,15 +7,19 @@ import zipfile
 from ..utils import download, check_sha1
 
 _model_sha1 = {name: checksum for checksum, name in [
-    ('853f2fb07aeb2927f7696e166b215609a987fd44', 'resnet50'),
-    #('bbba8e79b6bd131e82e2edf2ac0f119b3c6b8f87', 'resnet50'),
-    ('5be5422ad7cb6a2e5f5a54070d0aa9affe69a9a4', 'resnet101'),
-    ('eeed8e582f0fdccdba8579e7490570adc6d85c7c', 'fcn_resnet50_pcontext'),
-    ('425a7b15176105be0c0ae522aefde02bdcb3b9f5', 'encnet_resnet50_pcontext'),
-    ('abf1472fde53b7b41d7801a1f715765e1ef6f86e', 'encnet_resnet101_pcontext'),
-    ('167f05f69df94d4066dad155d1a71dc6493747eb', 'encnet_resnet50_ade'),
+    ('ebb6acbbd1d1c90b7f446ae59d30bf70c74febc1', 'resnet50'),
+    ('2a57e44de9c853fa015b172309a1ee7e2d0e4e2a', 'resnet101'),
+    ('0d43d698c66aceaa2bc0309f55efdd7ff4b143af', 'resnet152'),
+    ('2e22611a7f3992ebdee6726af169991bc26d7363', 'deepten_minc'),
     ('fc8c0b795abf0133700c2d4265d2f9edab7eb6cc', 'fcn_resnet50_ade'),
+    ('eeed8e582f0fdccdba8579e7490570adc6d85c7c', 'fcn_resnet50_pcontext'),
     ('54f70c772505064e30efd1ddd3a14e1759faa363', 'psp_resnet50_ade'),
+    ('075195c5237b778c718fd73ceddfa1376c18dfd0', 'deeplab_resnet50_ade'),
+    ('5ee47ee28b480cc781a195d13b5806d5bbc616bf', 'encnet_resnet101_coco'),
+    ('4de91d5922d4d3264f678b663f874da72e82db00', 'encnet_resnet50_pcontext'),
+    ('9f27ea13d514d7010e59988341bcbd4140fcc33d', 'encnet_resnet101_pcontext'),
+    ('07ac287cd77e53ea583f37454e17d30ce1509a4a', 'encnet_resnet50_ade'),
+    ('3f54fa3b67bac7619cd9b3673f5c8227cf8f4718', 'encnet_resnet101_ade'),
     ]}
 
 encoding_repo_url = 'https://hangzh.s3.amazonaws.com/'
@@ -52,9 +56,10 @@ def get_model_file(name, root=os.path.join('~', '.encoding', 'models')):
         if check_sha1(file_path, sha1_hash):
             return file_path
         else:
-            print('Mismatch in the content of model file detected. Downloading again.')
+            print('Mismatch in the content of model file {} detected.' +
+                  ' Downloading again.'.format(file_path))
     else:
-        print('Model file is not found. Downloading.')
+        print('Model file {} is not found. Downloading.'.format(file_path))
 
     if not os.path.exists(root):
         os.makedirs(root)

@@ -74,7 +74,7 @@ class MINCDataloder(data.Dataset):
         return len(self.images)
 
 
-class Dataloder():
+class Dataloader():
     def __init__(self, args):
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
@@ -94,9 +94,9 @@ class Dataloder():
             normalize,
         ])
 
-        trainset = MINCDataloder(root=os.path.expanduser('~/data/minc-2500/'), 
+        trainset = MINCDataloder(root=os.path.expanduser('~/.encoding/data/minc-2500/'), 
             train=True, transform=transform_train)
-        testset = MINCDataloder(root=os.path.expanduser('~/data/minc-2500/'), 
+        testset = MINCDataloder(root=os.path.expanduser('~/.encoding/data/minc-2500/'), 
             train=False, transform=transform_test)
     
         kwargs = {'num_workers': 8, 'pin_memory': True} if args.cuda else {}
