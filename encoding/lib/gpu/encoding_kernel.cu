@@ -87,7 +87,7 @@ __global__ void Aggregate_Forward_kernel (
 template<typename DType, typename Acctype>
 __global__ void Aggregate_Backward_kernel (
     DeviceTensor<DType, 3> GA,
-    DeviceTensor<DType, 1> GE,
+    DeviceTensor<DType, 3> GE,
     DeviceTensor<DType, 3> A,
     DeviceTensor<DType, 3> X,
     DeviceTensor<DType, 2> C) {
