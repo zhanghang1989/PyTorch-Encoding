@@ -1,5 +1,5 @@
 #include <vector>
-#include <torch/tensor.h>
+//#include <torch/tensor.h>
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
@@ -87,7 +87,7 @@ __global__ void Aggregate_Forward_kernel (
 template<typename DType, typename Acctype>
 __global__ void Aggregate_Backward_kernel (
     DeviceTensor<DType, 3> GA,
-    DeviceTensor<DType, 3> GE,
+    DeviceTensor<DType, 1> GE,
     DeviceTensor<DType, 3> A,
     DeviceTensor<DType, 3> X,
     DeviceTensor<DType, 2> C) {
@@ -166,7 +166,7 @@ at::Tensor Aggregate_Forward_CUDA(
     const at::Tensor X_,
     const at::Tensor C_) {
   /* Device tensors */
-  auto E_ = torch::zeros({A_.size(0), C_.size(0), C_.size(1)}, A_.options());
+  auto E_ = at::zeros({A_.size(0), C_.size(0), C_.size(1)}, A_.options());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   // B, K, D
   dim3 blocks(C_.size(1), C_.size(0), X_.size(0));
@@ -215,7 +215,7 @@ at::Tensor ScaledL2_Forward_CUDA(
     const at::Tensor X_,
     const at::Tensor C_,
     const at::Tensor S_) {
-  auto SL_ = torch::zeros({X_.size(0), X_.size(1), C_.size(0)}, X_.options());
+  auto SL_ = at::zeros({X_.size(0), X_.size(1), C_.size(0)}, X_.options());
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(C_.size(0), X_.size(1), X_.size(0));
   dim3 threads(getNumThreads(C_.size(1)));

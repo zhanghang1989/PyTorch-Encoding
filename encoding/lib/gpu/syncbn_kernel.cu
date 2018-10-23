@@ -1,5 +1,5 @@
 #include <vector>
-#include <torch/tensor.h>
+//#include <torch/tensor.h>
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
@@ -245,8 +245,8 @@ std::vector<at::Tensor> BatchNorm_Backward_CUDA(
 std::vector<at::Tensor> Sum_Square_Forward_CUDA(
     const at::Tensor input_) {
   /* outputs */
-  at::Tensor sum_ = torch::zeros({input_.size(1)}, input_.options());
-  at::Tensor square_ = torch::zeros({input_.size(1)}, input_.options());
+  at::Tensor sum_ = at::zeros({input_.size(1)}, input_.options());
+  at::Tensor square_ = at::zeros({input_.size(1)}, input_.options());
   /* cuda utils*/
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(input_.size(1));

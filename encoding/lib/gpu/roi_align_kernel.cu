@@ -1,4 +1,4 @@
-#include <torch/tensor.h>
+//#include <torch/tensor.h>
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
@@ -368,7 +368,7 @@ at::Tensor ROIAlign_Forward_CUDA(
   auto width = input.size(3);
 
   // Output Tensor is (num_rois, C, pooled_height, pooled_width)
-  auto output = torch::zeros({proposals, channels, pooled_height, pooled_width}, input.options());
+  auto output = at::zeros({proposals, channels, pooled_height, pooled_width}, input.options());
 
   auto count = output.numel();
   
@@ -415,7 +415,7 @@ at::Tensor ROIAlign_Backward_CUDA(
 
   // Output Tensor is (num_rois, C, pooled_height, pooled_width)
   // gradient wrt input features
-  auto grad_in = torch::zeros({b_size, channels, height, width}, rois.options());
+  auto grad_in = at::zeros({b_size, channels, height, width}, rois.options());
   auto num_rois = rois.size(0);
   auto count = grad_output.numel();
 

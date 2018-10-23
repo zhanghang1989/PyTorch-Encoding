@@ -8,3 +8,7 @@ docs/src/
 docs/html/
 encoding/_ext/
 encoding.egg-info/
+encoding/lib/gpu/.*
+encoding/lib/gpu/*.o
+encoding/lib/gpu/*.so
+
