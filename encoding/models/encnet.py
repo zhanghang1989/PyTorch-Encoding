@@ -9,9 +9,9 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 
-import encoding
 from .base import BaseNet
 from .fcn import FCNHead
+from ..nn import SyncBatchNorm, Encoding, Mean
 
 __all__ = ['EncNet', 'EncModule', 'get_encnet', 'get_encnet_resnet50_pcontext',
            'get_encnet_resnet101_pcontext', 'get_encnet_resnet50_ade',
@@ -19,7 +19,7 @@ __all__ = ['EncNet', 'EncModule', 'get_encnet', 'get_encnet_resnet50_pcontext',
 
 class EncNet(BaseNet):
     def __init__(self, nclass, backbone, aux=True, se_loss=True, lateral=False,
-                 norm_layer=encoding.nn.BatchNorm2d, **kwargs):
+                 norm_layer=SyncBatchNorm, **kwargs):
         super(EncNet, self).__init__(nclass, backbone, aux, se_loss,
                                      norm_layer=norm_layer, **kwargs)
         self.head = EncHead(2048, self.nclass, se_loss=se_loss,
@@ -49,10 +49,10 @@ class EncModule(nn.Module):
             nn.Conv2d(in_channels, in_channels, 1, bias=False),
             norm_layer(in_channels),
             nn.ReLU(inplace=True),
-            encoding.nn.Encoding(D=in_channels, K=ncodes),
-            encoding.nn.BatchNorm1d(ncodes),
+            Encoding(D=in_channels, K=ncodes),
+            norm_layer(ncodes),
             nn.ReLU(inplace=True),
-            encoding.nn.Mean(dim=1))
+            Mean(dim=1))
         self.fc = nn.Sequential(
             nn.Linear(in_channels, in_channels),
             nn.Sigmoid())

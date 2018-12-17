@@ -15,7 +15,6 @@ from torch.nn.parallel.parallel_apply import parallel_apply
 from torch.nn.parallel.scatter_gather import scatter
 
 from . import resnet
-from . import wideresnet
 from ..utils import batch_pix_accuracy, batch_intersection_union
 
 up_kwargs = {'mode': 'bilinear', 'align_corners': True}
@@ -45,12 +44,6 @@ class BaseNet(nn.Module):
         elif backbone == 'resnet152':
             self.pretrained = resnet.resnet152(pretrained=True, dilated=dilated,
                                                norm_layer=norm_layer, root=root)
-        elif backbone == 'wideresnet38':
-            self.pretrained = wideresnet.wideresnet38(pretrained=True, dilated=dilated,
-                                                      root=root)
-        elif backbone == 'wideresnet50':
-            self.pretrained = wideresnet.wideresnet50(pretrained=True, dilated=dilated,
-                                                      root=root)
         else:
             raise RuntimeError('unknown backbone: {}'.format(backbone))
         # bilinear upsample options
