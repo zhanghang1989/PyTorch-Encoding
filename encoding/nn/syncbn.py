@@ -72,7 +72,7 @@ class SyncBatchNorm(_BatchNorm):
         .. [2] Hang Zhang, Kristin Dana, Jianping Shi, Zhongyue Zhang, Xiaogang Wang, Ambrish Tyagi, and Amit Agrawal. "Context Encoding for Semantic Segmentation." *CVPR 2018*
 
     Examples:
-        >>> m = BatchNorm2d(100)
+        >>> m = SyncBatchNorm(100)
         >>> net = torch.nn.DataParallel(m)
         >>> output = net(input)
     """
