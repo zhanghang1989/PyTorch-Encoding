@@ -19,7 +19,7 @@ __all__ = ['EncNet', 'EncModule', 'get_encnet', 'get_encnet_resnet50_pcontext',
 
 class EncNet(BaseNet):
     def __init__(self, nclass, backbone, aux=True, se_loss=True, lateral=False,
-                 norm_layer=nn.BatchNorm2d, **kwargs):
+                 norm_layer=encoding.nn.BatchNorm2d, **kwargs):
         super(EncNet, self).__init__(nclass, backbone, aux, se_loss,
                                      norm_layer=norm_layer, **kwargs)
         self.head = EncHead(2048, self.nclass, se_loss=se_loss,
@@ -33,10 +33,10 @@ class EncNet(BaseNet):
         features = self.base_forward(x)
 
         x = list(self.head(*features))
-        x[0] = F.upsample(x[0], imsize, **self._up_kwargs)
+        x[0] = F.interpolate(x[0], imsize, **self._up_kwargs)
         if self.aux:
             auxout = self.auxlayer(features[2])
-            auxout = F.upsample(auxout, imsize, **self._up_kwargs)
+            auxout = F.interpolate(auxout, imsize, **self._up_kwargs)
             x.append(auxout)
         return tuple(x)
 
@@ -134,14 +134,9 @@ def get_encnet(dataset='pascal_voc', backbone='resnet50', pretrained=False,
     >>> model = get_encnet(dataset='pascal_voc', backbone='resnet50', pretrained=False)
     >>> print(model)
     """
-    acronyms = {
-        'pascal_voc': 'voc',
-        'ade20k': 'ade',
-        'pcontext': 'pcontext',
-    }
     kwargs['lateral'] = True if dataset.lower().startswith('p') else False
     # infer number of classes
-    from ..datasets import datasets
+    from ..datasets import datasets, acronyms
     model = EncNet(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, root=root, **kwargs)
     if pretrained:
         from .model_store import get_model_file
