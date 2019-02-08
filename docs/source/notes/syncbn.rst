@@ -12,7 +12,7 @@ BN layer was introduced in the paper `Batch Normalization: Accelerating Deep Net
     :align: center
 
 - Forward Pass: 
-    For the input data :math:`X={x_1, ...x_N}`, the data are normalized to be zero-mean and unit-variance, then scale and shit:
+    For the input data :math:`X={x_1, ...x_N}`, the data are normalized to be zero-mean and unit-variance, then scale and shift:
 
     .. math::
         y_i = \gamma\cdot\frac{x_i-\mu}{\sigma} + \beta ,
