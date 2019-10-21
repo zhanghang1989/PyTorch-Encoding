@@ -76,7 +76,7 @@ setup(
     version=version,
     author="Hang Zhang",
     author_email="zhanghang0704@gmail.com",
-    url="https://github.com/zhanghang1989/PyTorch-Encoding",
+    url="https://github.com/Bekovmi/PyTorch-Encoding",
     description="PyTorch Encoding Package",
     long_description=readme,
     license='MIT',
