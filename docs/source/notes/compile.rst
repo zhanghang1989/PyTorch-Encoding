@@ -2,13 +2,10 @@ Install and Citations
 =====================
 
 
-Install from Source
--------------------
+Installation
+------------
 
-    * Install PyTorch by following the `PyTorch instructions <http://pytorch.org/>`_.
-      This package relies on PyTorch master branch (higher than stable released v0.4.0), please follow
-      `the instruction <https://github.com/pytorch/pytorch#from-source>`_ to install
-      PyTorch from source.
+    * Install PyTorch 1.0.0 by following the `PyTorch instructions <http://pytorch.org/>`_.
  
     * PIP Install::
 
@@ -18,6 +15,33 @@ Install from Source
 
         git clone https://github.com/zhanghang1989/PyTorch-Encoding && cd PyTorch-Encoding
         python setup.py install
+
+
+Detailed Steps
+--------------
+
+This tutorial is a sucessful setup example for AWS EC2 p3 instance with ubuntu 16.04, CUDA 10.
+We cannot guarantee it to work for all the machines, but the steps should be similar.
+Assuming CUDA and cudnn are already sucessfully installed, otherwise please refer to other tutorials.
+
+      * Install Anaconda from the `link <https://www.anaconda.com/distribution/>`_, and install python 3.6.5::
+
+         conda install python==3.6.5
+
+      * Install ninja::
+ 
+         wget https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
+         sudo unzip ninja-linux.zip -d /usr/local/bin/
+         sudo update-alternatives --install /usr/bin/ninja ninja /usr/local/bin/ninja 1 --force
+
+      * Install PyTorch::
+
+         conda install -c pytorch magma-cuda100
+         conda install pytorch torchvision cudatoolkit=100 -c pytorch
+
+      * Install this package::
+
+         pip install torch-encoding
 
 Citations
 ---------
