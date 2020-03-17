@@ -1,5 +1,5 @@
 #include <torch/extension.h>
-// #include <torch/torch.h>
+#include <ATen/ATen.h>
 #include <vector>
 
 at::Tensor ROIAlign_Forward_CUDA(
@@ -51,12 +51,12 @@ std::vector<at::Tensor> ScaledL2_Backward_CUDA(
   const at::Tensor SL_);
 
 at::Tensor BatchNorm_Forward_CUDA(
-  const at::Tensor input_, 
-  const at::Tensor mean_,
-  const at::Tensor std_,
-  const at::Tensor gamma_,
-  const at::Tensor beta_,
-  float eps);
+    const at::Tensor input_, 
+    const at::Tensor ex_,
+    const at::Tensor exs_,
+    const at::Tensor gamma_,
+    const at::Tensor beta_,
+    float eps);
 
 at::Tensor BatchNorm_Forward_Inp_CUDA(
     const at::Tensor input_, 
@@ -145,3 +145,31 @@ std::vector<at::Tensor> AggregateV2_Backward_CUDA(
 void LeakyRelu_Forward_CUDA(at::Tensor z, float slope);
 
 void LeakyRelu_Backward_CUDA(at::Tensor z, at::Tensor dz, float slope);
+
+void CONV_RECTIFY_CUDA(
+  at::Tensor& output,
+  const at::Tensor& input,
+  at::IntArrayRef kernel_size,
+  at::IntArrayRef stride,
+  at::IntArrayRef padding,
+  bool ceil_mode);
+
+
+at::Tensor RECTIFIED_CONVOLUTION_FORWARD(
+  const at::Tensor& input,
+  const at::Tensor& weight,
+  const at::Tensor& bias,
+  at::IntArrayRef stride,
+  at::IntArrayRef padding,
+  at::IntArrayRef dilation,
+  at::IntArrayRef output_padding,
+  int64_t groups);
+
+//std::vector<at::Tensor> RECTIFIED_CONVOLUTION_BACKWARD(
+//  at::Tensor& grad_output,
+//  const at::Tensor& input,
+//  const at::Tensor& weight,
+//  at::IntArrayRef stride,
+//  at::IntArrayRef padding,
+//  at::IntArrayRef dilation,
+//  int64_t groups);

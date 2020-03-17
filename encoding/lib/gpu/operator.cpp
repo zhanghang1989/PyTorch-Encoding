@@ -26,4 +26,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("aggregatev2_backward", &AggregateV2_Backward_CUDA, "AggregateV2 backward (CUDA)");
   m.def("leaky_relu_forward", &LeakyRelu_Forward_CUDA, "Learky ReLU forward (CUDA)");
   m.def("leaky_relu_backward", &LeakyRelu_Backward_CUDA, "Learky ReLU backward (CUDA)");
+  m.def("conv_rectify", &CONV_RECTIFY_CUDA, "Convolution Rectifier (CUDA)");
+  m.def("rectified_convolution_forward", &RECTIFIED_CONVOLUTION_FORWARD, "Rectified Convolution (CUDA)");
+  //m.def("rectified_convolution_backward", &RECTIFIED_CONVOLUTION_BACKWARD, "Rectified Convolution (CUDA)");
 }
