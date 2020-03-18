@@ -174,22 +174,22 @@ void conv_rectify_cuda_tempalte(
   //at::TensorArg output_arg{ output, "output", 1 };
   //at::TensorArg input_arg{ input_, "input_", 2 };
 
-  //checkAllSameGPU("avg_pool2d_out_cuda", {output_arg, input_arg});
+  //checkAllSameGPU("rectify_out_cuda", {output_arg, input_arg});
 
   // #20866, #22032: Guarantee this for the official C++ API?
   TORCH_CHECK(kernel_size.size() == 1 || kernel_size.size() == 2,
-    "avg_pool2d: kernel_size must either be a single int, or a tuple of two ints");
+    "rectify: kernel_size must either be a single int, or a tuple of two ints");
   const int kH = safe_downcast<int, int64_t>(kernel_size[0]);
   const int kW = kernel_size.size() == 1 ? kH : safe_downcast<int, int64_t>(kernel_size[1]);
 
   TORCH_CHECK(stride.empty() || stride.size() == 1 || stride.size() == 2,
-    "avg_pool2d: stride must either be omitted, a single int, or a tuple of two ints");
+    "rectify: stride must either be omitted, a single int, or a tuple of two ints");
   const int dH = stride.empty() ? kH : safe_downcast<int, int64_t>(stride[0]);
   const int dW = stride.empty() ? kW :
                  stride.size() == 1 ? dH : safe_downcast<int, int64_t>(stride[1]);
 
   TORCH_CHECK(padding.size() == 1 || padding.size() == 2,
-    "avg_pool2d: padding must either be a single int, or a tuple of two ints");
+    "rectify: padding must either be a single int, or a tuple of two ints");
   const int padH = safe_downcast<int, int64_t>(padding[0]);
   const int padW = padding.size() == 1 ? padH : safe_downcast<int, int64_t>(padding[1]);
 
@@ -243,7 +243,7 @@ void conv_rectify_cuda_tempalte(
   //}
 }
 
-at::Tensor CONV_RECTIFY_CUDA(
+void CONV_RECTIFY_CUDA(
   at::Tensor& output,
   const at::Tensor& input,
   at::IntArrayRef kernel_size,
@@ -261,38 +261,38 @@ at::Tensor CONV_RECTIFY_CUDA(
   //return output;
 }
 
-at::Tensor RECTIFIED_CONVOLUTION_FORWARD(
-    const at::Tensor& input,
-    const at::Tensor& weight,
-    const at::Tensor& bias,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    at::IntArrayRef dilation,
-    at::IntArrayRef output_padding,
-    int64_t groups) {
-  auto& ctx = at::globalContext();
-
-  //at::Tensor output = at::cudnn_convolution(
-  at::Tensor output = at::convolution(
-    input,
-    weight,
-    bias,
-    stride,
-    padding,
-    dilation,
-    false,
-    output_padding,
-    groups);
-    //ctx.benchmarkCuDNN(),
-    //ctx.deterministicCuDNN());
-
-  const int64_t kH = weight.size(-2);
-  const int64_t kW = weight.size(-1);
-  at::IntArrayRef kernel_size = at::IntArrayRef{kH, kW};
-
-  CONV_RECTIFY_CUDA(output, input, kernel_size, stride, padding, false);
-  return output;
-}
+//at::Tensor RECTIFIED_CONVOLUTION_FORWARD(
+//    const at::Tensor& input,
+//    const at::Tensor& weight,
+//    const at::Tensor& bias,
+//    at::IntArrayRef stride,
+//    at::IntArrayRef padding,
+//    at::IntArrayRef dilation,
+//    at::IntArrayRef output_padding,
+//    int64_t groups) {
+//  auto& ctx = at::globalContext();
+//
+//  //at::Tensor output = at::cudnn_convolution(
+//  at::Tensor output = at::convolution(
+//    input,
+//    weight,
+//    bias,
+//    stride,
+//    padding,
+//    dilation,
+//    false,
+//    output_padding,
+//    groups);
+//    //ctx.benchmarkCuDNN(),
+//    //ctx.deterministicCuDNN());
+//
+//  const int64_t kH = weight.size(-2);
+//  const int64_t kW = weight.size(-1);
+//  at::IntArrayRef kernel_size = at::IntArrayRef{kH, kW};
+//
+//  CONV_RECTIFY_CUDA(output, input, kernel_size, stride, padding, false);
+//  return output;
+//}
 
 //std::vector<at::Tensor> RECTIFIED_CONVOLUTION_BACKWARD(
 //    at::Tensor& grad_output,

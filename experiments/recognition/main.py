@@ -47,7 +47,12 @@ def main():
         num_workers=args.workers, pin_memory=True)
     
     # init the model
-    model = encoding.models.get_model(args.model, pretrained=args.pretrained)
+    model_kwargs = {'pretrained': args.pretrained}
+    if args.rectify:
+        from encoding.nn import RFConv2d
+        model_kwargs['conv_layer'] = RFConv2d
+
+    model = encoding.models.get_model(args.model, **model_kwargs)
     print(model)
     # criterion and optimizer
     criterion = nn.CrossEntropyLoss()

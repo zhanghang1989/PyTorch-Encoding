@@ -26,6 +26,8 @@ class Options():
                             help='network model type (default: densenet)')
         parser.add_argument('--pretrained', action='store_true', 
                             default=False, help='load pretrianed mode')
+        parser.add_argument('--rectify', action='store_true', 
+                            default=False, help='rectify convolution')
         # training hyper params
         parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                             help='batch size for training (default: 128)')
