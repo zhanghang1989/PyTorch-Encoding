@@ -75,15 +75,15 @@ def main():
     #    raise ValueError('Target dir ['+target_dir+'] exists. Remove it first')
 
     download_dir = os.path.expanduser(args.download_dir)
-    #train_tar_fname = os.path.join(download_dir, _TRAIN_TAR)
-    #check_file(train_tar_fname, args.checksum, _TRAIN_TAR_SHA1)
+    train_tar_fname = os.path.join(download_dir, _TRAIN_TAR)
+    check_file(train_tar_fname, args.checksum, _TRAIN_TAR_SHA1)
     val_tar_fname = os.path.join(download_dir, _VAL_TAR)
     check_file(val_tar_fname, args.checksum, _VAL_TAR_SHA1)
 
     build_rec = args.with_rec
     if build_rec:
         os.makedirs(os.path.join(target_dir, 'rec'))
-    #extract_train(train_tar_fname, os.path.join(target_dir, 'train'), build_rec, args.num_thread)
+    extract_train(train_tar_fname, os.path.join(target_dir, 'train'), build_rec, args.num_thread)
     extract_val(val_tar_fname, os.path.join(target_dir, 'val'), build_rec, args.num_thread)
 
 if __name__ == '__main__':

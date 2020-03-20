@@ -50,7 +50,8 @@ def main():
     model_kwargs = {'pretrained': args.pretrained}
     if args.rectify:
         from encoding.nn import RFConv2d
-        model_kwargs['conv_layer'] = RFConv2d
+        #model_kwargs['conv_layer'] = RFConv2d
+        model_kwargs['use_rfconv'] = True
 
     model = encoding.models.get_model(args.model, **model_kwargs)
     print(model)

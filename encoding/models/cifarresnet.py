@@ -54,7 +54,7 @@ class Bottleneck(nn.Module):
     ref https://arxiv.org/abs/1603.05027
     """
     expansion = 4
-    def __init__(self, inplanes, planes, stride=1, conv_layer=nn.Conv2d, norm_layer=nn.BatchNorm2d):
+    def __init__(self, inplanes, planes, stride=1, conv_layer=None, norm_layer=nn.BatchNorm2d):
         super(Bottleneck, self).__init__()
         if inplanes != planes*self.expansion or stride !=1 :
             self.downsample = True
@@ -88,7 +88,7 @@ class Bottleneck(nn.Module):
 
 class CIFAR_ResNet(nn.Module):
     def __init__(self, block=Basicblock, num_blocks=[2,2,2], width_factor = 1, 
-                 num_classes=10, conv_layer=None, norm_layer=torch.nn.BatchNorm2d):
+                 num_classes=10, conv_layer=nn.Conv2d, norm_layer=torch.nn.BatchNorm2d):
         super(CIFAR_ResNet, self).__init__()
         self.expansion = block.expansion
 

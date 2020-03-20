@@ -4,7 +4,7 @@ import torch
 import torch.utils.model_zoo as model_zoo
 import torch.nn as nn
 
-from ..nn import GlobalAvgPool2d
+from ..nn import GlobalAvgPool2d, RFConv2d
 from ..models.model_store import get_model_file
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
@@ -64,13 +64,19 @@ class Bottleneck(nn.Module):
     # pylint: disable=unused-argument
     expansion = 4
     def __init__(self, inplanes, planes, stride=1, dilation=1,
-                 downsample=None, previous_dilation=1, norm_layer=None):
+                 downsample=None, previous_dilation=1, use_rfconv=False,
+                 norm_layer=None):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = norm_layer(planes)
-        self.conv2 = nn.Conv2d(
-            planes, planes, kernel_size=3, stride=stride,
-            padding=dilation, dilation=dilation, bias=False)
+        if use_rfconv:
+            self.conv2 = RFConv2d(
+                planes, planes, kernel_size=3, stride=stride,
+                padding=dilation, dilation=dilation, bias=False)
+        else:
+            self.conv2 = nn.Conv2d(
+                planes, planes, kernel_size=3, stride=stride,
+                padding=dilation, dilation=dilation, bias=False)
         self.bn2 = norm_layer(planes)
         self.conv3 = nn.Conv2d(
             planes, planes * 4, kernel_size=1, bias=False)
@@ -136,21 +142,23 @@ class ResNet(nn.Module):
     """
     # pylint: disable=unused-variable
     def __init__(self, block, layers, num_classes=1000, dilated=False, multi_grid=False,
-                 deep_base=True, norm_layer=nn.BatchNorm2d):
+                 deep_base=False, use_rfconv=False, norm_layer=nn.BatchNorm2d):
         self.inplanes = 128 if deep_base else 64
         super(ResNet, self).__init__()
+        self.use_rfconv = use_rfconv
+        conv_layer = RFConv2d if use_rfconv else nn.Conv2d
         if deep_base:
             self.conv1 = nn.Sequential(
-                nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1, bias=False),
+                conv_layer(3, 64, kernel_size=3, stride=2, padding=1, bias=False),
                 norm_layer(64),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
+                conv_layer(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
                 norm_layer(64),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1, bias=False),
+                conv_layer(64, 128, kernel_size=3, stride=1, padding=1, bias=False),
             )
         else:
-            self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+            self.conv1 = conv_layer(3, 64, kernel_size=7, stride=2, padding=3,
                                    bias=False)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
@@ -196,13 +204,16 @@ class ResNet(nn.Module):
         multi_dilations = [4, 8, 16]
         if multi_grid:
             layers.append(block(self.inplanes, planes, stride, dilation=multi_dilations[0],
-                                downsample=downsample, previous_dilation=dilation, norm_layer=norm_layer))
+                                downsample=downsample, previous_dilation=dilation,
+                                use_rfconv=self.use_rfconv, norm_layer=norm_layer))
         elif dilation == 1 or dilation == 2:
             layers.append(block(self.inplanes, planes, stride, dilation=1,
-                                downsample=downsample, previous_dilation=dilation, norm_layer=norm_layer))
+                                downsample=downsample, previous_dilation=dilation,
+                                use_rfconv=self.use_rfconv, norm_layer=norm_layer))
         elif dilation == 4:
             layers.append(block(self.inplanes, planes, stride, dilation=2,
-                                downsample=downsample, previous_dilation=dilation, norm_layer=norm_layer))
+                                downsample=downsample, previous_dilation=dilation,
+                                use_rfconv=self.use_rfconv, norm_layer=norm_layer))
         else:
             raise RuntimeError("=> unknown dilation size: {}".format(dilation))
 
@@ -210,10 +221,12 @@ class ResNet(nn.Module):
         for i in range(1, blocks):
             if multi_grid:
                 layers.append(block(self.inplanes, planes, dilation=multi_dilations[i],
-                                    previous_dilation=dilation, norm_layer=norm_layer))
+                                    previous_dilation=dilation,
+                                    use_rfconv=self.use_rfconv,
+                                    norm_layer=norm_layer))
             else:
                 layers.append(block(self.inplanes, planes, dilation=dilation, previous_dilation=dilation,
-                                    norm_layer=norm_layer))
+                                    use_rfconv=self.use_rfconv, norm_layer=norm_layer))
 
         return nn.Sequential(*layers)
 
