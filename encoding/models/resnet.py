@@ -284,6 +284,17 @@ def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
             get_model_file('resnet50', root=root)), strict=False)
     return model
 
+#def resnet50s(pretrained=False, root='~/.encoding/models', **kwargs):
+#    """Constructs a ResNet-50 model.
+#
+#    Args:
+#        pretrained (bool): If True, returns a model pre-trained on ImageNet
+#    """
+#    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+#    if pretrained:
+#        model.load_state_dict(torch.load(
+#            get_model_file('resnet50', root=root)), strict=False)
+#    return model
 
 def resnet101(pretrained=False, root='~/.encoding/models', **kwargs):
     """Constructs a ResNet-101 model.
