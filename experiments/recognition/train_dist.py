@@ -255,7 +255,7 @@ def main_worker(gpu, ngpus_per_node, args):
             print('Validation: Top1: %.3f | Top5: %.3f'%(top1_acc, top5_acc))
 
             # save checkpoint
-            acclist_val += [top1.avg]
+            acclist_val += [top1_acc]
             if top1_acc > best_pred:
                 best_pred = top1_acc 
                 is_best = True
@@ -271,7 +271,8 @@ def main_worker(gpu, ngpus_per_node, args):
     for epoch in range(args.start_epoch, args.epochs + 1):
         tic = time.time()
         train(epoch)
-        validate(epoch)
+        if epoch % 10 == 0:
+            validate(epoch)
         elapsed = time.time() - tic
         if args.gpu == 0:
             print(f'Epoch: {epoch}, Time cost: {elapsed}')
@@ -332,13 +333,7 @@ class MixUpWrapper(object):
                 mt = c * target + (1-c) * target[perm, :]
                 return md, mt
 
-        def expand(num_classes, tensor):
-            e = torch.zeros(tensor.size(0), num_classes)
-            e = e.scatter(1, tensor.unsqueeze(1), 1.0)
-            return e
-
         for input, target in loader:
-            #target = expand(self.num_classes, target)
             input, target = input.cuda(self.device), target.cuda(self.device)
             target = torch.nn.functional.one_hot(target, self.num_classes)
             i, t = mixup(self.alpha, self.num_classes, input, target)
