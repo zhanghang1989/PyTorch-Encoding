@@ -92,8 +92,8 @@ class Trainer():
         if args.ft:
             args.start_epoch = 0
         # lr scheduler
-        self.scheduler = utils.LR_Scheduler(args.lr_scheduler, args.lr,
-                                            args.epochs, len(self.trainloader))
+        self.scheduler = utils.LR_Scheduler_Head(args.lr_scheduler, args.lr,
+                                                 args.epochs, len(self.trainloader))
         self.best_pred = 0.0
 
     def training(self, epoch):

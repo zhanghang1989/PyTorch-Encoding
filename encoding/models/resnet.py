@@ -117,7 +117,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    """Dilated Pre-trained ResNet Model, which preduces the stride of 8 featuremaps at conv5.
+    """ResNet Variants
 
     Parameters
     ----------

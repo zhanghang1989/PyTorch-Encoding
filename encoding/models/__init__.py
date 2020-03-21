@@ -1,7 +1,6 @@
 from .model_zoo import get_model
 from .model_store import get_model_file
 from .resnet import *
-from .cifarresnet import *
 from .base import *
 from .fcn import *
 from .psp import *

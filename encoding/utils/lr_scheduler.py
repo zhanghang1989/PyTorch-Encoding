@@ -60,6 +60,12 @@ class LR_Scheduler(object):
         self._adjust_learning_rate(optimizer, lr)
 
     def _adjust_learning_rate(self, optimizer, lr):
+        for i in range(len(optimizer.param_groups)):
+            optimizer.param_groups[i]['lr'] = lr
+
+class LR_Scheduler_Head(LR_Scheduler):
+    """Incease the additional head LR to be 10 times"""
+    def _adjust_learning_rate(self, optimizer, lr):
         if len(optimizer.param_groups) == 1:
             optimizer.param_groups[0]['lr'] = lr
         else:

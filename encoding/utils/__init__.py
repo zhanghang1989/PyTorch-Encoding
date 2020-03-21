@@ -9,7 +9,7 @@
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 """Encoding Util Tools"""
-from .lr_scheduler import LR_Scheduler
+from .lr_scheduler import LR_Scheduler, LR_Scheduler_Head
 from .metrics import SegmentationMetric, batch_intersection_union, batch_pix_accuracy
 from .pallete import get_mask_pallete
 from .train_helper import *

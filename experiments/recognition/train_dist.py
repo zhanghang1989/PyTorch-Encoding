@@ -52,16 +52,17 @@ class Options():
                             help='batch size for testing (default: 256)')
         parser.add_argument('--epochs', type=int, default=120, metavar='N',
                             help='number of epochs to train (default: 600)')
-        parser.add_argument('--start_epoch', type=int, default=1, 
+        parser.add_argument('--start_epoch', type=int, default=0, 
                             metavar='N', help='the epoch number to start (default: 1)')
         parser.add_argument('--workers', type=int, default=8,
                             metavar='N', help='dataloader threads')
-        # lr setting
+        # optimizer
         parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
                             help='learning rate (default: 0.1)')
         parser.add_argument('--lr-scheduler', type=str, default='cos', 
                             help='learning rate scheduler (default: cos)')
-        # optimizer
+        parser.add_argument('--warmup-epochs', type=int, default=0,
+                            help='number of warmup epochs (default: 0)')
         parser.add_argument('--momentum', type=float, default=0.9, 
                             metavar='M', help='SGD momentum (default: 0.9)')
         parser.add_argument('--weight-decay', type=float, default=1e-4, 
@@ -163,18 +164,16 @@ def main_worker(gpu, ngpus_per_node, args):
     # criterion and optimizer
     if args.no_bn_wd:
         parameters = model.named_parameters()
-        bn_params = [v for n, v in parameters if 'bn' in n] # or 'bias' in n
-        rest_params = [v for n, v in parameters if not 'bn' in n] #('bn' in n or 'bias' in n)
+        param_dict = {}
+        for k, v in parameters:
+            param_dict[k] = v
+        bn_params = [v for n, v in param_dict.items() if ('bn' in n or 'bias' in n)]
+        rest_params = [v for n, v in param_dict.items() if not ('bn' in n or 'bias' in n)]
         if args.gpu == 0:
             print(" Weight decay NOT applied to BN parameters ")
-            #print(f'len(parameters): {len(model.parameters())} = {len(bn_params)} + {len(rest_params)}')
-        optimizer = torch.optim.SGD([{
-                                        'params': bn_params,
-                                        'weight_decay': 0
-                                    }, {
-                                        'params': rest_params,
-                                        'weight_decay': args.weight_decay
-                                    }],
+            print(f'len(parameters): {len(list(model.parameters()))} = {len(bn_params)} + {len(rest_params)}')
+        optimizer = torch.optim.SGD([{'params': bn_params, 'weight_decay': 0 },
+                                     {'params': rest_params, 'weight_decay': args.weight_decay}],
                                     lr=args.lr,
                                     momentum=args.momentum,
                                     weight_decay=args.weight_decay)
@@ -189,7 +188,7 @@ def main_worker(gpu, ngpus_per_node, args):
             if args.gpu == 0:
                 print("=> loading checkpoint '{}'".format(args.resume))
             checkpoint = torch.load(args.resume)
-            args.start_epoch = checkpoint['epoch'] + 1 if args.start_epoch == 1 else args.start_epoch
+            args.start_epoch = checkpoint['epoch'] + 1 if args.start_epoch == 0 else args.start_epoch
             best_pred = checkpoint['best_pred']
             acclist_train = checkpoint['acclist_train']
             acclist_val = checkpoint['acclist_val']
@@ -201,8 +200,11 @@ def main_worker(gpu, ngpus_per_node, args):
         else:
             raise RuntimeError ("=> no resume checkpoint found at '{}'".\
                 format(args.resume))
-    scheduler = encoding.utils.LR_Scheduler(args.lr_scheduler, args.lr, args.epochs,
-                                            len(train_loader))
+    scheduler = encoding.utils.LR_Scheduler(args.lr_scheduler,
+                                            args.lr,
+                                            args.epochs,
+                                            len(train_loader),
+                                            warmup_epochs=args.warmup_epochs)
     def train(epoch):
         train_sampler.set_epoch(epoch)
         model.train()
@@ -268,7 +270,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 'acclist_val':acclist_val,
                 }, args=args, is_best=is_best)
 
-    for epoch in range(args.start_epoch, args.epochs + 1):
+    for epoch in range(args.start_epoch, args.epochs):
         tic = time.time()
         train(epoch)
         if epoch % 10 == 0:

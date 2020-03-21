@@ -1,7 +1,6 @@
 # pylint: disable=wildcard-import, unused-wildcard-import
 
 from .resnet import *
-from .cifarresnet import *
 from .wideresnet import *
 from .fcn import *
 from .psp import *
@@ -36,7 +35,6 @@ def get_model(name, **kwargs):
         'resnet101': resnet101,
         'resnet152': resnet152,
         'xception65': xception65,
-        'cifar_resnet20': cifar_resnet20,
         'wideresnet38': wideresnet38,
         'wideresnet50': wideresnet50,
         'deepten_resnet50_minc': get_deepten_resnet50_minc,
