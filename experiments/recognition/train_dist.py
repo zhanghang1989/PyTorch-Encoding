@@ -7,26 +7,26 @@
 ## LICENSE file in the root directory of this source tree 
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from __future__ import print_function
 import os
 import time
 import argparse
-from tqdm import tqdm
-import torch.multiprocessing as mp
-from mpi4py import MPI
 import numpy as np
+from tqdm import tqdm
+from mpi4py import MPI
 
 import torch
 import torch.nn as nn
-from torch.nn.parallel import DistributedDataParallel
 import torch.distributed as dist
-from torch.multiprocessing import Process
+import torch.multiprocessing as mp
+from torch.nn.parallel import DistributedDataParallel
 
 import encoding
+from encoding.nn import LabelSmoothing, NLLMultiLabelSmooth
+from encoding.utils import accuracy, AverageMeter, MixUpWrapper
 
 class Options():
     def __init__(self):
-        # Training settings
+        # data settings
         parser = argparse.ArgumentParser(description='Deep Encoding')
         parser.add_argument('--dataset', type=str, default='cifar10',
                             help='training dataset (default: cifar10)')
@@ -45,7 +45,7 @@ class Options():
                             default=False, help='rectify convolution')
         parser.add_argument('--pretrained', action='store_true', 
                             default=False, help='load pretrianed mode')
-        # training hyper params
+        # training params
         parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                             help='batch size for training (default: 128)')
         parser.add_argument('--test-batch-size', type=int, default=256, metavar='N',
@@ -279,113 +279,6 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.gpu == 0:
             print(f'Epoch: {epoch}, Time cost: {elapsed}')
 
-class LabelSmoothing(nn.Module):
-    """
-    NLL loss with label smoothing.
-    """
-    def __init__(self, smoothing=0.1):
-        """
-        Constructor for the LabelSmoothing module.
-        :param smoothing: label smoothing factor
-        """
-        super(LabelSmoothing, self).__init__()
-        self.confidence = 1.0 - smoothing
-        self.smoothing = smoothing
-
-    def forward(self, x, target):
-        logprobs = torch.nn.functional.log_softmax(x, dim=-1)
-
-        nll_loss = -logprobs.gather(dim=-1, index=target.unsqueeze(1))
-        nll_loss = nll_loss.squeeze(1)
-        smooth_loss = -logprobs.mean(dim=-1)
-        loss = self.confidence * nll_loss + self.smoothing * smooth_loss
-        return loss.mean()
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
-    with torch.no_grad():
-        maxk = max(topk)
-        batch_size = target.size(0)
-
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-        res = []
-        for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size))
-        return res
-
-class MixUpWrapper(object):
-    def __init__(self, alpha, num_classes, dataloader, device):
-        self.alpha = alpha
-        self.dataloader = dataloader
-        self.num_classes = num_classes
-        self.device = device
-
-    def mixup_loader(self, loader):
-        def mixup(alpha, num_classes, data, target):
-            with torch.no_grad():
-                bs = data.size(0)
-                c = np.random.beta(alpha, alpha)
-                perm = torch.randperm(bs).cuda()
-
-                md = c * data + (1-c) * data[perm, :]
-                mt = c * target + (1-c) * target[perm, :]
-                return md, mt
-
-        for input, target in loader:
-            input, target = input.cuda(self.device), target.cuda(self.device)
-            target = torch.nn.functional.one_hot(target, self.num_classes)
-            i, t = mixup(self.alpha, self.num_classes, input, target)
-            yield i, t
-
-    def __len__(self):
-        return len(self.dataloader)
-
-    def __iter__(self):
-        return self.mixup_loader(self.dataloader)
-
-class NLLMultiLabelSmooth(nn.Module):
-    def __init__(self, smoothing = 0.1):
-        super(NLLMultiLabelSmooth, self).__init__()
-        self.confidence = 1.0 - smoothing
-        self.smoothing = smoothing
-
-    def forward(self, x, target):
-        if self.training:
-            x = x.float()
-            target = target.float()
-            logprobs = torch.nn.functional.log_softmax(x, dim = -1)
-    
-            nll_loss = -logprobs * target
-            nll_loss = nll_loss.sum(-1)
-    
-            smooth_loss = -logprobs.mean(dim=-1)
-    
-            loss = self.confidence * nll_loss + self.smoothing * smooth_loss
-    
-            return loss.mean()
-        else:
-            return torch.nn.functional.cross_entropy(x, target)
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
 
 if __name__ == "__main__":
     main()

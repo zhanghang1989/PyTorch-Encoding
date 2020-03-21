@@ -12,6 +12,8 @@ import threading
 import numpy as np
 import torch
 
+__all__ = ['SegmentationMetric', 'batch_intersection_union', 'batch_pix_accuracy']
+
 class SegmentationMetric(object):
     """Computes pixAcc and mIoU metric scroes
     """

@@ -10,6 +10,8 @@
 
 import math
 
+__all__ = ['LR_Scheduler', 'LR_Scheduler_Head']
+
 class LR_Scheduler(object):
     """Learning Rate Scheduler
 
