@@ -40,7 +40,7 @@ class DropBlock2D(nn.Module):
     def reset_steps(self, start_step, nr_steps, start_value=0, stop_value=None):
         self.inited = True
         stop_value = self.drop_prob.item() if stop_value is None else stop_value
-        self.drop_prob = start_value
+        self.drop_prob[0] = start_value
         self.step_size = (stop_value - start_value) / nr_steps
         self.nr_steps = nr_steps
         self.start_step = start_step
@@ -92,7 +92,6 @@ class DropBlock2D(nn.Module):
         idx = self.i.item()
         if idx > self.start_step and idx < self.start_step + self.nr_steps:
             self.drop_prob += self.step_size
-
         self.i += 1
 
     def extra_repr(self):

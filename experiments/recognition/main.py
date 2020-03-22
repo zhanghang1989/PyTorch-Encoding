@@ -109,7 +109,7 @@ def main():
     # init the model
     model_kwargs = {'pretrained': args.pretrained}
     if args.rectify:
-        model_kwargs['use_rfconv'] = True
+        model_kwargs['rectified_conv'] = True
 
     model = encoding.models.get_model(args.model, **model_kwargs)
     print(model)

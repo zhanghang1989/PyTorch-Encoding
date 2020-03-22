@@ -18,10 +18,10 @@ class Bottleneck(nn.Module):
     expansion = 4
     def __init__(self, inplanes, planes, stride=1, downsample=None,
                  radix=1, cardinality=1, bottleneck_width=64,
-                 dilation=1, rectified_conv=False,
+                 avd=False, avd_first=False, dilation=1, rectified_conv=False,
                  norm_layer=None, dropblock_prob=0.0, last_gamma=False):
         super(Bottleneck, self).__init__()
-        group_width = int(channels * (bottleneck_width / 64.)) * cardinality
+        group_width = int(planes * (bottleneck_width / 64.)) * cardinality
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = norm_layer(planes)
         self.dropblock_prob = dropblock_prob
@@ -35,6 +35,8 @@ class Bottleneck(nn.Module):
 
         if dropblock_prob > 0.0:
             self.dropblock1 = DropBlock2D(dropblock_prob, 3)
+            if radix == 1:
+                self.dropblock2 = DropBlock2D(dropblock_prob, 3)
             self.dropblock3 = DropBlock2D(dropblock_prob, 3)
 
         if radix > 1:
@@ -83,6 +85,8 @@ class Bottleneck(nn.Module):
         out = self.conv2(out)
         if self.radix == 1:
             out = self.bn2(out)
+            if self.dropblock_prob > 0.0:
+                out = self.dropblock2(out)
             out = self.relu(out)
 
         if self.avd and not self.avd_first:
@@ -132,7 +136,7 @@ class ResNet(nn.Module):
                  rectified_conv=False, avd=False, avd_first=False,
                  final_drop=0.0, dropblock_prob=0,
                  last_gamma=False, norm_layer=nn.BatchNorm2d):
-        self.cardinality = cardinality
+        self.cardinality = groups
         self.bottleneck_width = bottleneck_width
         # ResNet-D params
         self.inplanes = stem_width*2 if deep_stem else 64
@@ -140,7 +144,6 @@ class ResNet(nn.Module):
         self.last_gamma = last_gamma
         # ResNeSt params
         self.radix = radix
-        self.split_drop_ratio = split_drop_ratio
         self.avd = avd
         self.avd_first = avd_first
 
@@ -216,6 +219,7 @@ class ResNet(nn.Module):
             layers.append(block(self.inplanes, planes, stride, downsample=downsample,
                                 radix=self.radix, cardinality=self.cardinality,
                                 bottleneck_width=self.bottleneck_width,
+                                avd=self.avd, avd_first=self.avd_first,
                                 dilation=1, rectified_conv=self.rectified_conv,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
@@ -223,6 +227,7 @@ class ResNet(nn.Module):
             layers.append(block(self.inplanes, planes, stride, downsample=downsample,
                                 radix=self.radix, cardinality=self.cardinality,
                                 bottleneck_width=self.bottleneck_width,
+                                avd=self.avd, avd_first=self.avd_first,
                                 dilation=2, rectified_conv=self.rectified_conv,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
@@ -234,6 +239,7 @@ class ResNet(nn.Module):
             layers.append(block(self.inplanes, planes,
                                 radix=self.radix, cardinality=self.cardinality,
                                 bottleneck_width=self.bottleneck_width,
+                                avd=self.avd, avd_first=self.avd_first,
                                 dilation=dilation, rectified_conv=self.rectified_conv,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))

@@ -2,6 +2,7 @@
 
 from .resnet import *
 from .resnest import *
+from .resnest_ablation import *
 from .wideresnet import *
 from .fcn import *
 from .psp import *
@@ -31,6 +32,7 @@ def get_model(name, **kwargs):
     """
     models = {
         'resnest50': resnest50,
+        'resnet50d': resnet50d,
         'resnet50': resnet50,
         'resnet101': resnet101,
         'resnet152': resnet152,
