@@ -22,7 +22,7 @@ from torch.nn.parallel import DistributedDataParallel
 
 import encoding
 from encoding.nn import LabelSmoothing, NLLMultiLabelSmooth
-from encoding.utils import accuracy, AverageMeter, MixUpWrapper
+from encoding.utils import (accuracy, AverageMeter, MixUpWrapper, LR_Scheduler)
 
 class Options():
     def __init__(self):
@@ -45,6 +45,13 @@ class Options():
                             default=False, help='rectify convolution')
         parser.add_argument('--pretrained', action='store_true', 
                             default=False, help='load pretrianed mode')
+        parser.add_argument('--last-gamma', action='store_true', default=False,
+                            help='whether to init gamma of the last BN layer in \
+                            each bottleneck to 0 (default: False)')
+        parser.add_argument('--dropblock-prob', type=float, default=0,
+                            help='DropBlock prob. default is 0.')
+        parser.add_argument('--final-drop', type=float, default=0,
+                            help='final dropout prob. default is 0.')
         # training params
         parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                             help='batch size for training (default: 128)')
@@ -140,12 +147,26 @@ def main_worker(gpu, ngpus_per_node, args):
         sampler=val_sampler)
     
     # init the model
-    model_kwargs = {'pretrained': args.pretrained}
+    model_kwargs = {
+            'pretrained': args.pretrained,
+            'dropblock_prob': args.dropblock_prob,
+            'final_drop': args.final_drop,
+        }
     if args.rectify:
-        from encoding.nn import RFConv2d
-        model_kwargs['use_rfconv'] = True
+        model_kwargs['rectified_conv'] = True
 
+    if args.last_gamma:
+        model_kwargs['last_gamma'] = True
+    
     model = encoding.models.get_model(args.model, **model_kwargs)
+
+    if args.dropblock_prob > 0:
+        from functools import partial
+        from encoding.nn import reset_dropblock
+        nr_iters = (args.epochs - 2 * args.warmup_epochs) * len(train_loader)
+        apply_drop_prob = partial(reset_dropblock, args.warmup_epochs, nr_iters, 0.0, args.dropblock_prob)
+        model.apply()
+
     if args.gpu == 0:
         print(model)
 
@@ -200,11 +221,11 @@ def main_worker(gpu, ngpus_per_node, args):
         else:
             raise RuntimeError ("=> no resume checkpoint found at '{}'".\
                 format(args.resume))
-    scheduler = encoding.utils.LR_Scheduler(args.lr_scheduler,
-                                            args.lr,
-                                            args.epochs,
-                                            len(train_loader),
-                                            warmup_epochs=args.warmup_epochs)
+    scheduler = LR_Scheduler(args.lr_scheduler,
+                             args.lr,
+                             args.epochs,
+                             len(train_loader),
+                             warmup_epochs=args.warmup_epochs)
     def train(epoch):
         train_sampler.set_epoch(epoch)
         model.train()
@@ -282,4 +303,3 @@ def main_worker(gpu, ngpus_per_node, args):
 
 if __name__ == "__main__":
     main()
-

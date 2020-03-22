@@ -28,6 +28,8 @@ class RFConv2d(Conv2d):
         stride = _pair(stride)
         padding = _pair(padding)
         dilation = _pair(dilation)
+        self.rectify = padding[0] > 0 or padding[1] > 0
+
         super(RFConv2d, self).__init__(
                  in_channels, out_channels, kernel_size, stride=stride,
                  padding=padding, dilation=dilation, groups=groups,
@@ -43,9 +45,13 @@ class RFConv2d(Conv2d):
 
     def forward(self, input):
         output = self._conv_forward(input, self.weight)
-        output = rectify(output, input, self.kernel_size, self.stride, self.padding)
+        if self.rectify:
+            output = rectify(output, input, self.kernel_size, self.stride, self.padding)
         return output
 
     def base_forward(self, input):
         output = self._conv_forward(input, self.weight)
         return output
+
+    def extra_repr(self):
+        return 'rectify={}'.format(self.rectify)

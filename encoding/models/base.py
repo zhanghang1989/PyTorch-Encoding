@@ -37,13 +37,13 @@ class BaseNet(nn.Module):
         # copying modules from pretrained models
         self.backbone = backbone
         if backbone == 'resnet50':
-            self.pretrained = resnet.resnet50(pretrained=True, dilated=dilated,
+            self.pretrained = resnet.resnet50s(pretrained=True, dilated=dilated,
                                               norm_layer=norm_layer, root=root)
         elif backbone == 'resnet101':
-            self.pretrained = resnet.resnet101(pretrained=True, dilated=dilated,
+            self.pretrained = resnet.resnet101s(pretrained=True, dilated=dilated,
                                                norm_layer=norm_layer, root=root)
         elif backbone == 'resnet152':
-            self.pretrained = resnet.resnet152(pretrained=True, dilated=dilated,
+            self.pretrained = resnet.resnet152s(pretrained=True, dilated=dilated,
                                                norm_layer=norm_layer, root=root)
         elif backbone == 'wideresnet38':
             self.pretrained = wideresnet.wideresnet38(pretrained=True, dilated=dilated,

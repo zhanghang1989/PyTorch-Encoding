@@ -10,13 +10,73 @@
 
 from __future__ import print_function
 import os
+import argparse
 from tqdm import tqdm
 
 import torch
 import torch.nn as nn
 
 import encoding
-from option import Options
+from encoding.utils import (accuracy, AverageMeter, MixUpWrapper, LR_Scheduler)
+
+class Options():
+    def __init__(self):
+        # data settings
+        parser = argparse.ArgumentParser(description='Deep Encoding')
+        parser.add_argument('--dataset', type=str, default='cifar10',
+                            help='training dataset (default: cifar10)')
+        parser.add_argument('--base-size', type=int, default=256,
+                            help='base image size')
+        parser.add_argument('--crop-size', type=int, default=224,
+                            help='crop image size')
+        # model params 
+        parser.add_argument('--model', type=str, default='densenet',
+                            help='network model type (default: densenet)')
+        parser.add_argument('--pretrained', action='store_true', 
+                            default=False, help='load pretrianed mode')
+        parser.add_argument('--rectify', action='store_true', 
+                            default=False, help='rectify convolution')
+        # training hyper params
+        parser.add_argument('--batch-size', type=int, default=128, metavar='N',
+                            help='batch size for training (default: 128)')
+        parser.add_argument('--test-batch-size', type=int, default=256, metavar='N',
+                            help='batch size for testing (default: 256)')
+        parser.add_argument('--epochs', type=int, default=120, metavar='N',
+                            help='number of epochs to train (default: 600)')
+        parser.add_argument('--start_epoch', type=int, default=1, 
+                            metavar='N', help='the epoch number to start (default: 1)')
+        parser.add_argument('--workers', type=int, default=32,
+                            metavar='N', help='dataloader threads')
+        # lr setting
+        parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
+                            help='learning rate (default: 0.1)')
+        parser.add_argument('--lr-scheduler', type=str, default='cos', 
+                            help='learning rate scheduler (default: cos)')
+        parser.add_argument('--lr-step', type=int, default=40, metavar='LR',
+                            help='learning rate step (default: 40)')
+        # optimizer
+        parser.add_argument('--momentum', type=float, default=0.9, 
+                            metavar='M', help='SGD momentum (default: 0.9)')
+        parser.add_argument('--weight-decay', type=float, default=1e-4, 
+                            metavar ='M', help='SGD weight decay (default: 1e-4)')
+        # cuda, seed and logging
+        parser.add_argument('--no-cuda', action='store_true', 
+                            default=False, help='disables CUDA training')
+        parser.add_argument('--seed', type=int, default=1, metavar='S',
+                            help='random seed (default: 1)')
+        # checking point
+        parser.add_argument('--resume', type=str, default=None,
+                            help='put the path to resuming file if needed')
+        parser.add_argument('--checkname', type=str, default='default',
+                            help='set the checkpoint name')
+        # evaluation option
+        parser.add_argument('--eval', action='store_true', default= False,
+                            help='evaluating')
+        self.parser = parser
+
+    def parse(self):
+        args = self.parser.parse_args()
+        return args
 
 # global variable
 best_pred = 0.0
@@ -49,8 +109,6 @@ def main():
     # init the model
     model_kwargs = {'pretrained': args.pretrained}
     if args.rectify:
-        from encoding.nn import RFConv2d
-        #model_kwargs['conv_layer'] = RFConv2d
         model_kwargs['use_rfconv'] = True
 
     model = encoding.models.get_model(args.model, **model_kwargs)
@@ -81,8 +139,8 @@ def main():
         else:
             raise RuntimeError ("=> no resume checkpoint found at '{}'".\
                 format(args.resume))
-    scheduler = encoding.utils.LR_Scheduler(args.lr_scheduler, args.lr, args.epochs,
-                                            len(train_loader), args.lr_step)
+    scheduler = LR_Scheduler(args.lr_scheduler, args.lr, args.epochs,
+                             len(train_loader), args.lr_step)
     def train(epoch):
         model.train()
         losses = AverageMeter()
@@ -149,40 +207,6 @@ def main():
     for epoch in range(args.start_epoch, args.epochs + 1):
         train(epoch)
         validate(epoch)
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
-    with torch.no_grad():
-        maxk = max(topk)
-        batch_size = target.size(0)
-
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-        res = []
-        for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size))
-        return res
-
-
-class AverageMeter(object):
-    """Computes and stores the average and current value"""
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
 
 if __name__ == "__main__":
     main()

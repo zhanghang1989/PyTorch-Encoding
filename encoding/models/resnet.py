@@ -1,61 +1,14 @@
 """Dilated ResNet"""
 import math
 import torch
-import torch.utils.model_zoo as model_zoo
 import torch.nn as nn
 
-from ..nn import GlobalAvgPool2d, RFConv2d
+from ..nn import GlobalAvgPool2d, RFConv2d, SplAtConv2d, DropBlock2D
 from ..models.model_store import get_model_file
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-           'resnet152', 'BasicBlock', 'Bottleneck']
-
-model_urls = {
-    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
-    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
-}
-
-
-def conv3x3(in_planes, out_planes, stride=1):
-    "3x3 convolution with padding"
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
-
-
-class BasicBlock(nn.Module):
-    """ResNet BasicBlock
-    """
-    expansion = 1
-    def __init__(self, inplanes, planes, stride=1, dilation=1, downsample=None, previous_dilation=1,
-                 norm_layer=None):
-        super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride,
-                               padding=dilation, dilation=dilation, bias=False)
-        self.bn1 = norm_layer(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1,
-                               padding=previous_dilation, dilation=previous_dilation, bias=False)
-        self.bn2 = norm_layer(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
+__all__ = ['ResNet', 'Bottleneck',
+           'resnet50', 'resnet101', 'resnet152',
+           'resnet50s', 'resnet101s', 'resnet152s']
 
 
 class Bottleneck(nn.Module):
@@ -63,49 +16,82 @@ class Bottleneck(nn.Module):
     """
     # pylint: disable=unused-argument
     expansion = 4
-    def __init__(self, inplanes, planes, stride=1, dilation=1,
-                 downsample=None, previous_dilation=1, use_rfconv=False,
-                 norm_layer=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None,
+                 radix=1, cardinality=1, bottleneck_width=64,
+                 dilation=1, rectified_conv=False,
+                 norm_layer=None, dropblock_prob=0.0, last_gamma=False):
         super(Bottleneck, self).__init__()
+        group_width = int(channels * (bottleneck_width / 64.)) * cardinality
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = norm_layer(planes)
-        if use_rfconv:
+        self.dropblock_prob = dropblock_prob
+        self.radix = radix
+        self.avd = avd and (stride > 1 or dilation > 1)
+        self.avd_first = avd_first
+
+        if self.avd:
+            self.avd_layer = nn.AvgPool2d(3, stride, padding=1)
+            stride = 1
+
+        if dropblock_prob > 0.0:
+            self.dropblock1 = DropBlock2D(dropblock_prob, 3)
+            self.dropblock3 = DropBlock2D(dropblock_prob, 3)
+
+        if radix > 1:
+            self.conv2 = SplAtConv2d(
+                planes, planes, kernel_size=3,
+                stride=stride, padding=dilation,
+                dilation=dilation, groups=cardinality, bias=False,
+                radix=radix, rectify=rectified_conv,
+                norm_layer=norm_layer,
+                dropblock_prob=dropblock_prob)
+        elif rectified_conv:
             self.conv2 = RFConv2d(
                 planes, planes, kernel_size=3, stride=stride,
                 padding=dilation, dilation=dilation, bias=False)
+            self.bn2 = norm_layer(planes)
         else:
             self.conv2 = nn.Conv2d(
                 planes, planes, kernel_size=3, stride=stride,
                 padding=dilation, dilation=dilation, bias=False)
-        self.bn2 = norm_layer(planes)
+            self.bn2 = norm_layer(planes)
+
         self.conv3 = nn.Conv2d(
             planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = norm_layer(planes * 4)
+
+        if last_gamma:
+            from torch.nn.init import zeros_
+            zeros_(self.bn3.weight)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.dilation = dilation
         self.stride = stride
-
-    def _sum_each(self, x, y):
-        assert(len(x) == len(y))
-        z = []
-        for i in range(len(x)):
-            z.append(x[i]+y[i])
-        return z
 
     def forward(self, x):
         residual = x
 
         out = self.conv1(x)
         out = self.bn1(out)
+        if self.dropblock_prob > 0.0:
+            out = self.dropblock1(out)
         out = self.relu(out)
 
+        if self.avd and self.avd_first:
+            out = self.avd_layer(out)
+
         out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
+        if self.radix == 1:
+            out = self.bn2(out)
+            out = self.relu(out)
+
+        if self.avd and not self.avd_first:
+            out = self.avd_layer(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
+        if self.dropblock_prob > 0.0:
+            out = self.dropblock3(out)
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -114,7 +100,6 @@ class Bottleneck(nn.Module):
         out = self.relu(out)
 
         return out
-
 
 class ResNet(nn.Module):
     """ResNet Variants
@@ -141,21 +126,36 @@ class ResNet(nn.Module):
         - Yu, Fisher, and Vladlen Koltun. "Multi-scale context aggregation by dilated convolutions."
     """
     # pylint: disable=unused-variable
-    def __init__(self, block, layers, num_classes=1000, dilated=False, multi_grid=False,
-                 deep_base=False, use_rfconv=False, norm_layer=nn.BatchNorm2d):
-        self.inplanes = 128 if deep_base else 64
+    def __init__(self, block, layers, radix=1, groups=1, bottleneck_width=64,
+                 num_classes=1000, dilated=False,
+                 deep_stem=False, stem_width=64, avg_down=False,
+                 rectified_conv=False, avd=False, avd_first=False,
+                 final_drop=0.0, dropblock_prob=0,
+                 last_gamma=False, norm_layer=nn.BatchNorm2d):
+        self.cardinality = cardinality
+        self.bottleneck_width = bottleneck_width
+        # ResNet-D params
+        self.inplanes = stem_width*2 if deep_stem else 64
+        self.avg_down = avg_down
+        self.last_gamma = last_gamma
+        # ResNeSt params
+        self.radix = radix
+        self.split_drop_ratio = split_drop_ratio
+        self.avd = avd
+        self.avd_first = avd_first
+
         super(ResNet, self).__init__()
-        self.use_rfconv = use_rfconv
-        conv_layer = RFConv2d if use_rfconv else nn.Conv2d
-        if deep_base:
+        self.rectified_conv = rectified_conv
+        conv_layer = RFConv2d if rectified_conv else nn.Conv2d
+        if deep_stem:
             self.conv1 = nn.Sequential(
-                conv_layer(3, 64, kernel_size=3, stride=2, padding=1, bias=False),
-                norm_layer(64),
+                conv_layer(3, stem_width, kernel_size=3, stride=2, padding=1, bias=False),
+                norm_layer(stem_width),
                 nn.ReLU(inplace=True),
-                conv_layer(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
-                norm_layer(64),
+                conv_layer(stem_width, stem_width, kernel_size=3, stride=1, padding=1, bias=False),
+                norm_layer(stem_width),
                 nn.ReLU(inplace=True),
-                conv_layer(64, 128, kernel_size=3, stride=1, padding=1, bias=False),
+                conv_layer(stem_width, stem_width*2, kernel_size=3, stride=1, padding=1, bias=False),
             )
         else:
             self.conv1 = conv_layer(3, 64, kernel_size=7, stride=2, padding=3,
@@ -167,20 +167,20 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
         if dilated:
             self.layer3 = self._make_layer(block, 256, layers[2], stride=1,
-                                           dilation=2, norm_layer=norm_layer)
-            if multi_grid:
-                self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
-                                               dilation=4, norm_layer=norm_layer,
-                                               multi_grid=True)
-            else:
-                self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
-                                               dilation=4, norm_layer=norm_layer)
+                                           dilation=2, norm_layer=norm_layer,
+                                           dropblock_prob=dropblock_prob)
+            self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
+                                           dilation=4, norm_layer=norm_layer,
+                                           dropblock_prob=dropblock_prob)
         else:
             self.layer3 = self._make_layer(block, 256, layers[2], stride=2,
-                                           norm_layer=norm_layer)
+                                           norm_layer=norm_layer,
+                                           dropblock_prob=dropblock_prob)
             self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
-                                           norm_layer=norm_layer)
+                                           norm_layer=norm_layer,
+                                           dropblock_prob=dropblock_prob)
         self.avgpool = GlobalAvgPool2d()
+        self.drop = nn.Dropout(final_drop) if final_drop > 0.0 else None
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         for m in self.modules():
@@ -191,42 +191,52 @@ class ResNet(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block, planes, blocks, stride=1, dilation=1, norm_layer=None, multi_grid=False):
+    def _make_layer(self, block, planes, blocks, stride=1, dilation=1, norm_layer=None,
+                    dropblock_prob=0.0):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
-                norm_layer(planes * block.expansion),
-            )
+            down_layers = []
+            if self.avg_down:
+                if dilation == 1:
+                    down_layers.append(nn.AvgPool2d(kernel_size=stride, stride=stride,
+                                                    ceil_mode=True, count_include_pad=False))
+                else:
+                    down_layers.append(nn.AvgPool2d(kernel_size=1, stride=1,
+                                                    ceil_mode=True, count_include_pad=False))
+                down_layers.append(nn.Conv2d(self.inplanes, planes * block.expansion,
+                                             kernel_size=1, stride=1, bias=False))
+            else:
+                down_layers.append(nn.Conv2d(self.inplanes, planes * block.expansion,
+                                             kernel_size=1, stride=stride, bias=False))
+            down_layers.append(norm_layer(planes * block.expansion))
+            downsample = nn.Sequential(*down_layers)
 
         layers = []
-        multi_dilations = [4, 8, 16]
-        if multi_grid:
-            layers.append(block(self.inplanes, planes, stride, dilation=multi_dilations[0],
-                                downsample=downsample, previous_dilation=dilation,
-                                use_rfconv=self.use_rfconv, norm_layer=norm_layer))
-        elif dilation == 1 or dilation == 2:
-            layers.append(block(self.inplanes, planes, stride, dilation=1,
-                                downsample=downsample, previous_dilation=dilation,
-                                use_rfconv=self.use_rfconv, norm_layer=norm_layer))
+        if dilation == 1 or dilation == 2:
+            layers.append(block(self.inplanes, planes, stride, downsample=downsample,
+                                radix=self.radix, cardinality=self.cardinality,
+                                bottleneck_width=self.bottleneck_width,
+                                dilation=1, rectified_conv=self.rectified_conv,
+                                norm_layer=norm_layer, dropblock_prob=dropblock_prob,
+                                last_gamma=self.last_gamma))
         elif dilation == 4:
-            layers.append(block(self.inplanes, planes, stride, dilation=2,
-                                downsample=downsample, previous_dilation=dilation,
-                                use_rfconv=self.use_rfconv, norm_layer=norm_layer))
+            layers.append(block(self.inplanes, planes, stride, downsample=downsample,
+                                radix=self.radix, cardinality=self.cardinality,
+                                bottleneck_width=self.bottleneck_width,
+                                dilation=2, rectified_conv=self.rectified_conv,
+                                norm_layer=norm_layer, dropblock_prob=dropblock_prob,
+                                last_gamma=self.last_gamma))
         else:
             raise RuntimeError("=> unknown dilation size: {}".format(dilation))
 
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            if multi_grid:
-                layers.append(block(self.inplanes, planes, dilation=multi_dilations[i],
-                                    previous_dilation=dilation,
-                                    use_rfconv=self.use_rfconv,
-                                    norm_layer=norm_layer))
-            else:
-                layers.append(block(self.inplanes, planes, dilation=dilation, previous_dilation=dilation,
-                                    use_rfconv=self.use_rfconv, norm_layer=norm_layer))
+            layers.append(block(self.inplanes, planes,
+                                radix=self.radix, cardinality=self.cardinality,
+                                bottleneck_width=self.bottleneck_width,
+                                dilation=dilation, rectified_conv=self.rectified_conv,
+                                norm_layer=norm_layer, dropblock_prob=dropblock_prob,
+                                last_gamma=self.last_gamma))
 
         return nn.Sequential(*layers)
 
@@ -242,34 +252,13 @@ class ResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
+        #x = x.view(x.size(0), -1)
+        x = torch.flatten(x, 1)
+        if self.drop:
+            x = self.drop(x)
         x = self.fc(x)
 
         return x
-
-
-def resnet18(pretrained=False, **kwargs):
-    """Constructs a ResNet-18 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
-    return model
-
-
-def resnet34(pretrained=False, **kwargs):
-    """Constructs a ResNet-34 model.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
-    return model
 
 
 def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
@@ -284,18 +273,6 @@ def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
             get_model_file('resnet50', root=root)), strict=False)
     return model
 
-#def resnet50s(pretrained=False, root='~/.encoding/models', **kwargs):
-#    """Constructs a ResNet-50 model.
-#
-#    Args:
-#        pretrained (bool): If True, returns a model pre-trained on ImageNet
-#    """
-#    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-#    if pretrained:
-#        model.load_state_dict(torch.load(
-#            get_model_file('resnet50', root=root)), strict=False)
-#    return model
-
 def resnet101(pretrained=False, root='~/.encoding/models', **kwargs):
     """Constructs a ResNet-101 model.
 
@@ -308,13 +285,83 @@ def resnet101(pretrained=False, root='~/.encoding/models', **kwargs):
             get_model_file('resnet101', root=root)), strict=False)
     return model
 
-
 def resnet152(pretrained=False, root='~/.encoding/models', **kwargs):
     """Constructs a ResNet-152 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
+    model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnet152', root=root)), strict=False)
+    return model
+
+def resnext50_32x4d(pretrained=False, root='~/.encoding/models', **kwargs):
+    r"""ResNeXt-50 32x4d model from
+    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    kwargs['groups'] = 32
+    kwargs['bottleneck_width'] = 4
+    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnext50_32x4d', root=root)), strict=False)
+    return model
+
+def resnext101_32x8d(pretrained=False, root='~/.encoding/models', **kwargs):
+    r"""ResNeXt-101 32x8d model from
+    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    kwargs['groups'] = 32
+    kwargs['bottleneck_width'] = 8
+    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnext50_32x4d', root=root)), strict=False)
+    return model
+
+def resnet50s(pretrained=False, root='~/.encoding/models', **kwargs):
+    """Constructs a ResNetS-50 model as in PSPNet.
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    kwargs['deep_stem'] = True
+    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnet50', root=root)), strict=False)
+    return model
+
+def resnet101s(pretrained=False, root='~/.encoding/models', **kwargs):
+    """Constructs a ResNetS-101 model as in PSPNet.
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    kwargs['deep_stem'] = True
+    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnet101', root=root)), strict=False)
+    return model
+
+def resnet152s(pretrained=False, root='~/.encoding/models', **kwargs):
+    """Constructs a ResNetS-152 model as in PSPNet.
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    kwargs['deep_stem'] = True
     model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
     if pretrained:
         model.load_state_dict(torch.load(

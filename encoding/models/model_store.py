@@ -50,6 +50,14 @@ def get_model_file(name, root=os.path.join('~', '.encoding', 'models')):
     file_path
         Path to the requested pretrained model file.
     """
+    if name not in _model_sha1:
+        from torchvision.models.resnet import model_urls
+        if name not in model_urls:
+            raise ValueError('Pretrained model for {name} is not available.'.format(name=name))
+        root = os.path.expanduser(root)
+        return download(model_urls[name],
+                        path=root,
+                        overwrite=True)
     file_name = '{name}-{short_hash}'.format(name=name, short_hash=short_hash(name))
     root = os.path.expanduser(root)
     file_path = os.path.join(root, file_name+'.pth')
