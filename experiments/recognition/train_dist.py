@@ -164,7 +164,8 @@ def main_worker(gpu, ngpus_per_node, args):
         from functools import partial
         from encoding.nn import reset_dropblock
         nr_iters = (args.epochs - 2 * args.warmup_epochs) * len(train_loader)
-        apply_drop_prob = partial(reset_dropblock, args.warmup_epochs, nr_iters, 0.0, args.dropblock_prob)
+        apply_drop_prob = partial(reset_dropblock, args.warmup_epochs*len(train_loader),
+                                  nr_iters, 0.0, args.dropblock_prob)
         model.apply(apply_drop_prob)
 
     if args.gpu == 0:
@@ -222,9 +223,9 @@ def main_worker(gpu, ngpus_per_node, args):
             raise RuntimeError ("=> no resume checkpoint found at '{}'".\
                 format(args.resume))
     scheduler = LR_Scheduler(args.lr_scheduler,
-                             args.lr,
-                             args.epochs,
-                             len(train_loader),
+                             base_lr=args.lr,
+                             num_epochs=args.epochs,
+                             iters_per_epoch=len(train_loader),
                              warmup_epochs=args.warmup_epochs)
     def train(epoch):
         train_sampler.set_epoch(epoch)

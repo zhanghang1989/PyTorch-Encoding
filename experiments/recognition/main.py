@@ -36,6 +36,10 @@ class Options():
                             default=False, help='load pretrianed mode')
         parser.add_argument('--rectify', action='store_true', 
                             default=False, help='rectify convolution')
+        parser.add_argument('--dropblock-prob', type=float, default=0,
+                            help='DropBlock prob. default is 0.')
+        parser.add_argument('--final-drop', type=float, default=0,
+                            help='final dropout prob. default is 0.')
         # training hyper params
         parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                             help='batch size for training (default: 128)')
@@ -107,7 +111,11 @@ def main():
         num_workers=args.workers, pin_memory=True)
     
     # init the model
-    model_kwargs = {'pretrained': args.pretrained}
+    model_kwargs = {
+            'pretrained': args.pretrained,
+            'dropblock_prob': args.dropblock_prob,
+            'final_drop': args.final_drop,
+        }
     if args.rectify:
         model_kwargs['rectified_conv'] = True
 

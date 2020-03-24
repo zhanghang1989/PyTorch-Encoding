@@ -15,24 +15,7 @@ import torch.nn as nn
 #from ..nn import SyncBatchNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-__all__ = ['accuracy', 'MixUpWrapper', 'get_selabel_vector']
-
-def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
-    with torch.no_grad():
-        maxk = max(topk)
-        batch_size = target.size(0)
-
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
-
-        res = []
-        for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size))
-        return res
-
+__all__ = ['MixUpWrapper', 'get_selabel_vector']
 
 class MixUpWrapper(object):
     def __init__(self, alpha, num_classes, dataloader, device):

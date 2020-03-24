@@ -35,11 +35,13 @@ class DropBlock2D(nn.Module):
     def reset(self):
         """stop DropBlock"""
         self.inited = True
+        self.i[0] = 0
         self.drop_prob = 0.0
 
     def reset_steps(self, start_step, nr_steps, start_value=0, stop_value=None):
         self.inited = True
         stop_value = self.drop_prob.item() if stop_value is None else stop_value
+        self.i[0] = 0
         self.drop_prob[0] = start_value
         self.step_size = (stop_value - start_value) / nr_steps
         self.nr_steps = nr_steps
@@ -93,6 +95,22 @@ class DropBlock2D(nn.Module):
         if idx > self.start_step and idx < self.start_step + self.nr_steps:
             self.drop_prob += self.step_size
         self.i += 1
+
+    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
+                              missing_keys, unexpected_keys, error_msgs):
+        idx_key = prefix + 'i'
+        drop_prob_key = prefix + 'drop_prob'
+        if idx_key not in state_dict:
+            state_dict[idx_key] =  torch.zeros(1, dtype=torch.int64)
+        if idx_key not in drop_prob_key:
+            state_dict[drop_prob_key] =  torch.ones(1, dtype=torch.float32)
+        super(_NormBase, self)._load_from_state_dict(
+            state_dict, prefix, local_metadata, strict,
+            missing_keys, unexpected_keys, error_msgs)
+
+    def _save_to_state_dict(self, destination, prefix, keep_vars):
+        """overwrite save method"""
+        pass
 
     def extra_repr(self):
         return 'drop_prob={}, step_size={}'.format(self.drop_prob, self.step_size)
