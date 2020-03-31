@@ -3,7 +3,6 @@
 ## Email: zhanghang0704@gmail.com
 ## Copyright (c) 2020
 ##
-## This source code is licensed under the MIT-style license found in the
 ## LICENSE file in the root directory of this source tree
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -21,14 +20,18 @@ __all__ = ['RFConv2d']
 
 
 class RFConv2d(Conv2d):
+    """Rectified Convolution
+    """
     def __init__(self, in_channels, out_channels, kernel_size, stride=1,
                  padding=0, dilation=1, groups=1,
-                 bias=True, padding_mode='zeros'):
+                 bias=True, padding_mode='zeros',
+                 average_mode=False):
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
         dilation = _pair(dilation)
-        self.rectify = padding[0] > 0 or padding[1] > 0
+        self.rectify = average_mode or (padding[0] > 0 or padding[1] > 0)
+        self.average = average_mode
 
         super(RFConv2d, self).__init__(
                  in_channels, out_channels, kernel_size, stride=stride,
@@ -46,12 +49,10 @@ class RFConv2d(Conv2d):
     def forward(self, input):
         output = self._conv_forward(input, self.weight)
         if self.rectify:
-            output = rectify(output, input, self.kernel_size, self.stride, self.padding)
-        return output
-
-    def base_forward(self, input):
-        output = self._conv_forward(input, self.weight)
+            output = rectify(output, input, self.kernel_size, self.stride,
+                             self.padding, self.dilation, self.average)
         return output
 
     def extra_repr(self):
-        return 'rectify={}'.format(self.rectify)
+        return super().extra_repr() + ', rectify={}, average_mode={}'. \
+            format(self.rectify, self.average)

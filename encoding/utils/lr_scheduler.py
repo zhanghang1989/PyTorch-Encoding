@@ -56,7 +56,7 @@ class LR_Scheduler(object):
             lr = self.base_lr * (0.1 ** (epoch // self.lr_step))
         else:
             raise NotImplemented
-        if epoch > self.epoch:
+        if epoch > self.epoch and (epoch == 0 or best_pred > 0.0):
             print('\n=>Epoch %i, learning rate = %.4f, \
                 previous best = %.4f' % (epoch, lr, best_pred))
             self.epoch = epoch

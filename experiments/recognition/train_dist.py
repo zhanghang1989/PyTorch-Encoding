@@ -3,7 +3,6 @@
 ## Email: zhanghang0704@gmail.com
 ## Copyright (c) 2020
 ##
-## This source code is licensed under the MIT-style license found in the
 ## LICENSE file in the root directory of this source tree 
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -30,7 +29,7 @@ class Options():
         parser = argparse.ArgumentParser(description='Deep Encoding')
         parser.add_argument('--dataset', type=str, default='cifar10',
                             help='training dataset (default: cifar10)')
-        parser.add_argument('--base-size', type=int, default=256,
+        parser.add_argument('--base-size', type=int, default=None,
                             help='base image size')
         parser.add_argument('--crop-size', type=int, default=224,
                             help='crop image size')
@@ -38,10 +37,14 @@ class Options():
                             help='label-smoothing (default eta: 0.0)')
         parser.add_argument('--mixup', type=float, default=0.0,
                             help='mixup (default eta: 0.0)')
+        parser.add_argument('--rand-aug', action='store_true', 
+                            default=False, help='rectify convolution')
         # model params 
         parser.add_argument('--model', type=str, default='densenet',
                             help='network model type (default: densenet)')
         parser.add_argument('--rectify', action='store_true', 
+                            default=False, help='rectify convolution')
+        parser.add_argument('--rectify-avg', action='store_true', 
                             default=False, help='rectify convolution')
         parser.add_argument('--pretrained', action='store_true', 
                             default=False, help='load pretrianed mode')
@@ -128,7 +131,8 @@ def main_worker(gpu, ngpus_per_node, args):
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
     # init dataloader
-    transform_train, transform_val = encoding.transforms.get_transform(args.dataset, args.base_size, args.crop_size)
+    transform_train, transform_val = encoding.transforms.get_transform(
+            args.dataset, args.base_size, args.crop_size, args.rand_aug)
     trainset = encoding.datasets.get_dataset(args.dataset, root=os.path.expanduser('~/.encoding/data'),
                                              transform=transform_train, train=True, download=True)
     valset = encoding.datasets.get_dataset(args.dataset, root=os.path.expanduser('~/.encoding/data'),
@@ -140,27 +144,33 @@ def main_worker(gpu, ngpus_per_node, args):
         num_workers=args.workers, pin_memory=True,
         sampler=train_sampler)
 
-    val_sampler = torch.utils.data.distributed.DistributedSampler(valset)
+    val_sampler = torch.utils.data.distributed.DistributedSampler(valset, shuffle=False)
     val_loader = torch.utils.data.DataLoader(
         valset, batch_size=args.test_batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True,
         sampler=val_sampler)
     
     # init the model
-    model_kwargs = {
-            'pretrained': args.pretrained,
-            'dropblock_prob': args.dropblock_prob,
-            'final_drop': args.final_drop,
-        }
-    if args.rectify:
-        model_kwargs['rectified_conv'] = True
+    model_kwargs = {}
+    if args.pretrained:
+        model_kwargs['pretrained'] = True
+
+    if args.final_drop > 0.0:
+        model_kwargs['final_drop'] = args.final_drop
+
+    if args.dropblock_prob > 0.0:
+        model_kwargs['dropblock_prob'] = args.dropblock_prob
 
     if args.last_gamma:
         model_kwargs['last_gamma'] = True
+
+    if args.rectify:
+        model_kwargs['rectified_conv'] = True
+        model_kwargs['rectify_avg'] = args.rectify_avg
     
     model = encoding.models.get_model(args.model, **model_kwargs)
 
-    if args.dropblock_prob > 0:
+    if args.dropblock_prob > 0.0:
         from functools import partial
         from encoding.nn import reset_dropblock
         nr_iters = (args.epochs - 2 * args.warmup_epochs) * len(train_loader)
@@ -271,11 +281,19 @@ def main_worker(gpu, ngpus_per_node, args):
                 top5.update(acc5[0], data.size(0))
 
         comm = MPI.COMM_WORLD
-        res1 = comm.gather(top1.avg, root=0)
-        res2 = comm.gather(top5.avg, root=0)
+        # send to master
+        sum1 = comm.gather(top1.sum, root=0)
+        cnt1 = comm.gather(top1.count, root=0)
+        sum5 = comm.gather(top5.sum, root=0)
+        cnt5 = comm.gather(top5.count, root=0)
+        # get back from master
+        sum1 = comm.bcast(sum1, root=0)
+        cnt1 = comm.bcast(cnt1, root=0)
+        sum5 = comm.bcast(sum5, root=0)
+        cnt5 = comm.bcast(cnt5, root=0)
         if args.gpu == 0:
-            top1_acc = sum(res1) / len(res1)
-            top5_acc = sum(res2) / len(res2)
+            top1_acc = sum(sum1) / sum(cnt1)
+            top5_acc = sum(sum5) / len(cnt5)
             print('Validation: Top1: %.3f | Top5: %.3f'%(top1_acc, top5_acc))
 
             # save checkpoint
@@ -301,6 +319,7 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.gpu == 0:
             print(f'Epoch: {epoch}, Time cost: {elapsed}')
 
+    validate(epoch)
 
 if __name__ == "__main__":
     main()

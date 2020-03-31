@@ -131,17 +131,17 @@ class WideResNet(nn.Module):
 
         if dilated:
             self.mod5 = self._make_layer(5, BasicBlock, 512, layers[3], stride=1, dilation=2,
-                                           expansion=2)
+                                         expansion=2)
             self.mod6 = self._make_layer(6, Bottleneck, 512, layers[4], stride=1, dilation=4,
-                                           expansion=4, dropout=0.3)
+                                         expansion=4, dropout=0.3)
             self.mod7 = self._make_layer(7, Bottleneck, 1024, layers[5], stride=1, dilation=4,
-                                           expansion=4, dropout=0.5)
+                                         expansion=4, dropout=0.5)
         else:
             self.mod5 = self._make_layer(5, BasicBlock, 512, layers[3], stride=2, expansion=2)
             self.mod6 = self._make_layer(6, Bottleneck, 512, layers[4], stride=2,
-                                           expansion=4, dropout=0.3)
+                                         expansion=4, dropout=0.3)
             self.mod7 = self._make_layer(7, Bottleneck, 1024, layers[5], stride=1, expansion=4,
-                                           dropout=0.5)
+                                         dropout=0.5)
         self.bn_out = ABN(4096)
 
         self.avgpool = GlobalAvgPool2d()

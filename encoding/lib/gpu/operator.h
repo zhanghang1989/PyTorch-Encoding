@@ -152,24 +152,5 @@ void CONV_RECTIFY_CUDA(
   at::IntArrayRef kernel_size,
   at::IntArrayRef stride,
   at::IntArrayRef padding,
-  bool ceil_mode);
-
-
-//at::Tensor RECTIFIED_CONVOLUTION_FORWARD(
-//  const at::Tensor& input,
-//  const at::Tensor& weight,
-//  const at::Tensor& bias,
-//  at::IntArrayRef stride,
-//  at::IntArrayRef padding,
-//  at::IntArrayRef dilation,
-//  at::IntArrayRef output_padding,
-//  int64_t groups);
-
-//std::vector<at::Tensor> RECTIFIED_CONVOLUTION_BACKWARD(
-//  at::Tensor& grad_output,
-//  const at::Tensor& input,
-//  const at::Tensor& weight,
-//  at::IntArrayRef stride,
-//  at::IntArrayRef padding,
-//  at::IntArrayRef dilation,
-//  int64_t groups);
+  at::IntArrayRef dilation,
+  bool avg_mode);

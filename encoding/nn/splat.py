@@ -4,8 +4,9 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.nn import Conv2d, Module, Linear, BatchNorm2d, ReLU
+from torch.nn.modules.utils import _pair
 
-from ..functions import rectify
+from ..nn import RFConv2d
 from .dropblock import DropBlock2D
 
 __all__ = ['SKConv2d']
@@ -15,17 +16,24 @@ class SplAtConv2d(Module):
     """
     def __init__(self, in_channels, channels, kernel_size, stride=(1, 1), padding=(0, 0),
                  dilation=(1, 1), groups=1, bias=True,
-                 radix=2, rectify=False, norm_layer=None,
+                 radix=2, reduction_factor=4,
+                 rectify=False, rectify_avg=False, norm_layer=None,
                  dropblock_prob=0.0, **kwargs):
         super(SplAtConv2d, self).__init__()
+        padding = _pair(padding)
         self.rectify = rectify and (padding[0] > 0 or padding[1] > 0)
-        inter_channels = max(in_channels*radix//2//r, 32)
+        self.rectify_avg = rectify_avg
+        inter_channels = max(in_channels*radix//reduction_factor, 32)
         self.radix = radix
         self.cardinality = groups
         self.channels = channels
         self.dropblock_prob = dropblock_prob
-        self.conv = Conv2d(in_channels, channels*radix, kernel_size, stride, padding, dilation,
-                           groups=groups*radix, bias=bias, **kwargs)
+        if self.rectify:
+            self.conv = RFConv2d(in_channels, channels*radix, kernel_size, stride, padding, dilation,
+                                 groups=groups*radix, bias=bias, average_mode=rectify_avg, **kwargs)
+        else:
+            self.conv = Conv2d(in_channels, channels*radix, kernel_size, stride, padding, dilation,
+                               groups=groups*radix, bias=bias, **kwargs)
         self.use_bn = norm_layer is not None
         self.bn0 = norm_layer(channels*radix)
         self.relu = ReLU(inplace=True)
@@ -39,7 +47,7 @@ class SplAtConv2d(Module):
         x = self.conv(x)
         if self.use_bn:
             x = self.bn0(x)
-        if dropblock_prob > 0.0:
+        if self.dropblock_prob > 0.0:
             x = self.dropblock(x)
         x = self.relu(x)
 
@@ -56,7 +64,7 @@ class SplAtConv2d(Module):
             gap = self.bn1(gap)
         gap = self.relu(gap)
 
-        atten = self.fc2(atten).view((batch, self.radix, self.channels))
+        atten = self.fc2(gap).view((batch, self.radix, self.channels))
         if self.radix > 1:
             atten = F.softmax(atten, dim=1).view(batch, -1, 1, 1)
         else:
@@ -64,12 +72,7 @@ class SplAtConv2d(Module):
 
         if self.radix > 1:
             atten = torch.split(atten, channel//self.radix, dim=1)
-            out = [att*split for (att, split) in zip(atten, splited)]
+            out = sum([att*split for (att, split) in zip(atten, splited)])
         else:
             out = atten * x
-        if self.rectify:
-            output = rectify(output, input, self.kernel_size, self.stride, self.padding)
         return out.contiguous()
-
-    def extra_repr(self):
-        return 'rectify={}'.format(self.rectify)

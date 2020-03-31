@@ -22,10 +22,6 @@ from encoding.models import get_segmentation_model
 
 from option import Options
 
-torch_ver = torch.__version__[:3]
-if torch_ver == '0.3':
-    from torch.autograd import Variable
-
 class Trainer():
     def __init__(self, args):
         self.args = args
@@ -103,9 +99,6 @@ class Trainer():
         for i, (image, target) in enumerate(tbar):
             self.scheduler(self.optimizer, i, epoch, self.best_pred)
             self.optimizer.zero_grad()
-            if torch_ver == "0.3":
-                image = Variable(image)
-                target = Variable(target)
             outputs = self.model(image)
             loss = self.criterion(outputs, target)
             loss.backward()
@@ -140,12 +133,8 @@ class Trainer():
         total_inter, total_union, total_correct, total_label = 0, 0, 0, 0
         tbar = tqdm(self.valloader, desc='\r')
         for i, (image, target) in enumerate(tbar):
-            if torch_ver == "0.3":
-                image = Variable(image, volatile=True)
+            with torch.no_grad():
                 correct, labeled, inter, union = eval_batch(self.model, image, target)
-            else:
-                with torch.no_grad():
-                    correct, labeled, inter, union = eval_batch(self.model, image, target)
 
             total_correct += correct
             total_label += labeled

@@ -4,63 +4,12 @@
 #include <ATen/Dispatch.h>
 #include <ATen/TensorUtils.h>
 #include <ATen/AccumulateType.h>
-//#include <ATen/native/Pool.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <ATen/cuda/CUDAApplyUtils.cuh>
 #include <ATen/cuda/detail/TensorInfo.cuh>
 #include <ATen/cuda/detail/IndexUtils.cuh>
 #include <ATen/cuda/detail/KernelUtils.h>
 
-/*
-#include <THC/THCNumerics.cuh>
-#include <c10/macros/Macros.h>
-*/
-
-/*
-void checkAllSame(CheckedFrom c, ArrayRef<TensorArg> tensors, void(*fn)(CheckedFrom, const TensorArg&, const TensorArg&)) {
-  const TensorArg* t0 = nullptr;
-  for (auto& t : tensors) {
-    if (!t->defined()) continue;
-    if (t0 != nullptr) {
-      fn(c, *t0, t);
-    } else {
-      t0 = &t;
-    }
-  }
-}
-
-void checkSameGPU(CheckedFrom c, const TensorArg& t1, const TensorArg& t2) {
-  if (! (t1->is_cuda()) || ! (t2->is_cuda())) {
-    std::ostringstream oss;
-    if (! t1->is_cuda()) {
-      oss << "Tensor for " << t1 << " is on CPU, ";
-    }
-    if (! t2->is_cuda()) {
-      oss << "Tensor for " << t2 << " is on CPU, ";
-    }
-    oss << "but expected " << ((!(t1->is_cuda() || t2->is_cuda())) ? "them" : "it")
-        << " to be on GPU (while checking arguments for " << c << ")";
-    AT_ERROR(oss.str());
-  }
-  TORCH_CHECK(
-    t1->get_device() == t2->get_device(),
-    "Expected tensor for ", t1, " to have the same device as tensor for ", t2,
-    "; but device ", t1->get_device(), " does not equal ", t2->get_device(),
-    " (while checking arguments for ", c, ")");
-}
-
-void checkAllSameGPU(CheckedFrom c, ArrayRef<TensorArg> tensors) {
-  checkAllSame(c, tensors, checkSameGPU);
-}
-
-__device__ inline int min(int a, int b) {
-  return a <= b ? a : b;
-}
-
-__device__ inline int max(int a, int b) {
-  return a >= b ? a : b;
-}
-*/
 
 template <typename dest_t, typename src_t>
 static inline dest_t safe_downcast(src_t v)
@@ -136,7 +85,9 @@ __global__ void conv_rectify_cuda_frame(
     const int height, const int width, const int pooled_height,
     const int pooled_width, const int kernel_h, const int kernel_w,
     const int stride_h, const int stride_w, const int pad_h, const int pad_w,
-    scalar_t* const top_data) {
+    const int dilation_h, const int dilation_w,
+    scalar_t* const top_data,
+    bool average_mode) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -151,14 +102,15 @@ __global__ void conv_rectify_cuda_frame(
     wstart = max(wstart, 0);
     hend = min(hend, height);
     wend = min(wend, width);
-    //const scalar_t* const bottom_slice = bottom_data + (n * channels + c) * height * width;
-    //accscalar_t aveval = bottom_slicep[];//accscalar_t(0);
-    //for (int h = hstart; h < hend; ++h) {
-    //  for (int w = wstart; w < wend; ++w) {
-    //    aveval += bottom_slice[h * width + w];
-    //  }
-    //}
-    accscalar_t mul_factor = accscalar_t(1.0) * pool_size / ((hend - hstart) * (wend - wstart));
+    accscalar_t mul_factor;
+    int hcount = int(((hend - hstart) - 1) / dilation_h + 1);
+    int wcount = int(((wend - wstart) - 1) / dilation_w + 1);
+    if (average_mode) {
+      mul_factor = accscalar_t(1.0) / (hcount * wcount);
+    }
+    else {
+      mul_factor = accscalar_t(1.0) * pool_size / (hcount * wcount);
+    }
     top_data[index] = ScalarConvert<accscalar_t, scalar_t>::to(top_data[index] * mul_factor);
   }
 }
@@ -169,7 +121,8 @@ void conv_rectify_cuda_tempalte(
   at::IntArrayRef kernel_size,
   at::IntArrayRef stride,
   at::IntArrayRef padding,
-  bool ceil_mode)
+  at::IntArrayRef dilation,
+  bool average)
 {
   //at::TensorArg output_arg{ output, "output", 1 };
   //at::TensorArg input_arg{ input_, "input_", 2 };
@@ -193,6 +146,11 @@ void conv_rectify_cuda_tempalte(
   const int padH = safe_downcast<int, int64_t>(padding[0]);
   const int padW = padding.size() == 1 ? padH : safe_downcast<int, int64_t>(padding[1]);
 
+  TORCH_CHECK(dilation.size() == 1 || dilation.size() == 2,
+    "rectify: dilation must either be a single int, or a tuple of two ints");
+  const int dilationH = safe_downcast<int, int64_t>(dilation[0]);
+  const int dilationW = dilation.size() == 1 ? dilationH : safe_downcast<int, int64_t>(dilation[1]);
+
   TORCH_CHECK((input_.ndimension() == 3 || input_.ndimension() == 4),
     "non-empty 3D or 4D (batch mode) tensor expected for input");
 
@@ -201,12 +159,12 @@ void conv_rectify_cuda_tempalte(
   const int64_t inputHeight = input_.size(-2);
   const int64_t inputWidth = input_.size(-1);
 
-  const int64_t outputWidth = pooling_output_shape<int64_t>(inputWidth, kW, padW, dW, 1, ceil_mode);
-  const int64_t outputHeight = pooling_output_shape<int64_t>(inputHeight, kH, padH, dH, 1, ceil_mode);
+  const int64_t outputWidth = pooling_output_shape<int64_t>(inputWidth, kW, padW, dW, 1, false);
+  const int64_t outputHeight = pooling_output_shape<int64_t>(inputHeight, kH, padH, dH, 1, false);
 
   pool2d_shape_check(
     input_,
-    kH, kW, dH, dW, padH, padW, 1, 1,
+    kH, kW, dH, dW, padH, padW, dilationH, dilationW,
     nInputPlane,
     inputHeight, inputWidth,
     outputHeight, outputWidth);
@@ -232,15 +190,13 @@ void conv_rectify_cuda_tempalte(
                 kH, kW,
                 dH, dW,
                 padH, padW,
-                output_data);
+                dilationH, dilationW,
+                output_data,
+                average);
   }));
 
 
   AT_CUDA_CHECK(cudaGetLastError());
-
-  //if (input.ndimension() == 3) {
-  //  output.resize_({nInputPlane, outputHeight, outputWidth});
-  //}
 }
 
 void CONV_RECTIFY_CUDA(
@@ -249,7 +205,8 @@ void CONV_RECTIFY_CUDA(
   at::IntArrayRef kernel_size,
   at::IntArrayRef stride,
   at::IntArrayRef padding,
-  bool ceil_mode) {
+  at::IntArrayRef dilation,
+  bool average) {
   //at::Tensor output = at::empty({0}, input.options());
   conv_rectify_cuda_tempalte(
     output,
@@ -257,81 +214,7 @@ void CONV_RECTIFY_CUDA(
     kernel_size,
     stride,
     padding,
-    ceil_mode);
-  //return output;
+    dilation,
+    average);
 }
 
-//at::Tensor RECTIFIED_CONVOLUTION_FORWARD(
-//    const at::Tensor& input,
-//    const at::Tensor& weight,
-//    const at::Tensor& bias,
-//    at::IntArrayRef stride,
-//    at::IntArrayRef padding,
-//    at::IntArrayRef dilation,
-//    at::IntArrayRef output_padding,
-//    int64_t groups) {
-//  auto& ctx = at::globalContext();
-//
-//  //at::Tensor output = at::cudnn_convolution(
-//  at::Tensor output = at::convolution(
-//    input,
-//    weight,
-//    bias,
-//    stride,
-//    padding,
-//    dilation,
-//    false,
-//    output_padding,
-//    groups);
-//    //ctx.benchmarkCuDNN(),
-//    //ctx.deterministicCuDNN());
-//
-//  const int64_t kH = weight.size(-2);
-//  const int64_t kW = weight.size(-1);
-//  at::IntArrayRef kernel_size = at::IntArrayRef{kH, kW};
-//
-//  CONV_RECTIFY_CUDA(output, input, kernel_size, stride, padding, false);
-//  return output;
-//}
-
-//std::vector<at::Tensor> RECTIFIED_CONVOLUTION_BACKWARD(
-//    at::Tensor& grad_output,
-//    const at::Tensor& input,
-//    const at::Tensor& weight,
-//    at::IntArrayRef stride,
-//    at::IntArrayRef padding,
-//    at::IntArrayRef dilation,
-//    int64_t groups
-//  ) {
-//  const int64_t kH = weight.size(-2);
-//  const int64_t kW = weight.size(-1);
-//  at::IntArrayRef kernel_size = at::IntArrayRef{kH, kW};
-//
-//  // rectify
-//  CONV_RECTIFY_CUDA(grad_output, input, kernel_size, stride, padding, false);
-//
-//  auto& ctx = at::globalContext();
-//  at::Tensor grad_input = at::cudnn_convolution_backward_input(
-//    input.size(),
-//    grad_output,
-//    weight,
-//    padding,
-//    stride,
-//    dilation,
-//    groups,
-//    ctx.benchmarkCuDNN(),
-//    ctx.deterministicCuDNN());
-//
-//  at::Tensor grad_weight = at::cudnn_convolution_backward_weight(
-//    weight.size(),
-//    grad_output,
-//    input,
-//    padding,
-//    stride,
-//    dilation,
-//    groups,
-//    ctx.benchmarkCuDNN(),
-//    ctx.deterministicCuDNN());
-//
-//  return {grad_input, grad_weight};
-//}

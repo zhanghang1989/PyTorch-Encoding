@@ -22,8 +22,20 @@ from ..utils.misc import EncodingDeprecationWarning
 from ..functions import *
 
 
-__all__ = ['SyncBatchNorm', 'BatchNorm1d', 'BatchNorm2d', 'BatchNorm3d']
+__all__ = ['DistSyncBatchNorm', 'SyncBatchNorm', 'BatchNorm1d', 'BatchNorm2d', 'BatchNorm3d']
 
+class DistSyncBatchNorm(_BatchNorm):
+    def __init__(self, num_features, eps=1e-5, momentum=0.1, process_group=None):
+        super(SyncBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=True)
+        self.process_group = process_group
+
+    def forward(self, x):
+        # Resize the input to (B, C, -1).
+        input_shape = x.size()
+        x = x.view(input_shape[0], self.num_features, -1)
+        y = dist_syncbatchnorm(self.weight, self.bias, self.running_mean, self.running_var, self.eps,
+                               self.momentum, self.training, self.process_group)
+        return y.view(input_shape)
 
 class SyncBatchNorm(_BatchNorm):
     r"""Cross-GPU Synchronized Batch normalization (SyncBN)
@@ -90,8 +102,6 @@ class SyncBatchNorm(_BatchNorm):
         self.worker_ids = self.devices[1:]
         self.master_queue = Queue(len(self.worker_ids))
         self.worker_queues = [Queue(1) for _ in self.worker_ids]
-        # running_exs
-        #self.register_buffer('running_exs', torch.ones(num_features))
 
     def forward(self, x):
         # Resize the input to (B, C, -1).
@@ -128,6 +138,7 @@ class SyncBatchNorm(_BatchNorm):
             return 'sync={}, act={}, slope={}, inplace={}'.format(
                 self.sync, self.activation, self.slope, self.inplace
             )
+
 
 class BatchNorm1d(SyncBatchNorm):
     r"""

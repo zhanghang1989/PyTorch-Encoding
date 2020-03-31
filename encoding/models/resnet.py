@@ -1,4 +1,11 @@
-"""Dilated ResNet"""
+##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Created by: Hang Zhang
+## Email: zhanghang0704@gmail.com
+## Copyright (c) 2020
+##
+## LICENSE file in the root directory of this source tree 
+##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+"""ResNet variants"""
 import math
 import torch
 import torch.nn as nn
@@ -7,9 +14,56 @@ from ..nn import GlobalAvgPool2d, RFConv2d, SplAtConv2d, DropBlock2D
 from ..models.model_store import get_model_file
 
 __all__ = ['ResNet', 'Bottleneck',
-           'resnet50', 'resnet101', 'resnet152',
-           'resnet50s', 'resnet101s', 'resnet152s']
+           'resnet18', 'resnet34', 'resnet38',
+           'resnet50', 'resnet101', 'resnet152']
 
+
+class BasicBlock(nn.Module):
+    """ResNet BasicBlock
+    """
+    expansion = 1
+    #def __init__(self, inplanes, planes, stride=1, dilation=1, downsample=None, previous_dilation=1,
+    #             norm_layer=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None,
+                 radix=1, cardinality=1, bottleneck_width=64,
+                 avd=False, avd_first=False, dilation=1,
+                 rectified_conv=False, rectify_avg=False,
+                 norm_layer=None, dropblock_prob=0.0, last_gamma=False):
+        super(BasicBlock, self).__init__()
+        if dilation != 1 or cardinality != 1 or radix != 1 or dropblock_prob > 0.0 or avd or avd_first:
+            # not supported yet
+            raise NotImplementedError
+        conv_layer = RFConv2d if rectified_conv else nn.Conv2d
+        conv_kwargs = {'average_mode': rectify_avg} if rectified_conv else {}
+        self.conv1 = conv_layer(inplanes, planes, kernel_size=3, stride=stride,
+                                padding=dilation, dilation=dilation, bias=False,
+                                **conv_kwargs)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv_layer(planes, planes, kernel_size=3, stride=1,
+                                padding=dilation, dilation=dilation, bias=False,
+                                **conv_kwargs)
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
 
 class Bottleneck(nn.Module):
     """ResNet Bottleneck
@@ -18,7 +72,8 @@ class Bottleneck(nn.Module):
     expansion = 4
     def __init__(self, inplanes, planes, stride=1, downsample=None,
                  radix=1, cardinality=1, bottleneck_width=64,
-                 avd=False, avd_first=False, dilation=1, rectified_conv=False,
+                 avd=False, avd_first=False, dilation=1,
+                 rectified_conv=False, rectify_avg=False,
                  norm_layer=None, dropblock_prob=0.0, last_gamma=False):
         super(Bottleneck, self).__init__()
         group_width = int(planes * (bottleneck_width / 64.)) * cardinality
@@ -45,12 +100,14 @@ class Bottleneck(nn.Module):
                 stride=stride, padding=dilation,
                 dilation=dilation, groups=cardinality, bias=False,
                 radix=radix, rectify=rectified_conv,
+                rectify_avg=rectify_avg,
                 norm_layer=norm_layer,
                 dropblock_prob=dropblock_prob)
         elif rectified_conv:
             self.conv2 = RFConv2d(
                 planes, planes, kernel_size=3, stride=stride,
-                padding=dilation, dilation=dilation, bias=False)
+                padding=dilation, dilation=dilation, bias=False,
+                average_mode=rectify_avg)
             self.bn2 = norm_layer(planes)
         else:
             self.conv2 = nn.Conv2d(
@@ -133,7 +190,8 @@ class ResNet(nn.Module):
     def __init__(self, block, layers, radix=1, groups=1, bottleneck_width=64,
                  num_classes=1000, dilated=False,
                  deep_stem=False, stem_width=64, avg_down=False,
-                 rectified_conv=False, avd=False, avd_first=False,
+                 rectified_conv=False, rectify_avg=False,
+                 avd=False, avd_first=False,
                  final_drop=0.0, dropblock_prob=0,
                  last_gamma=False, norm_layer=nn.BatchNorm2d):
         self.cardinality = groups
@@ -149,20 +207,22 @@ class ResNet(nn.Module):
 
         super(ResNet, self).__init__()
         self.rectified_conv = rectified_conv
+        self.rectify_avg = rectify_avg
         conv_layer = RFConv2d if rectified_conv else nn.Conv2d
+        conv_kwargs = {'average_mode': rectify_avg} if rectified_conv else {}
         if deep_stem:
             self.conv1 = nn.Sequential(
-                conv_layer(3, stem_width, kernel_size=3, stride=2, padding=1, bias=False),
+                conv_layer(3, stem_width, kernel_size=3, stride=2, padding=1, bias=False, **conv_kwargs),
                 norm_layer(stem_width),
                 nn.ReLU(inplace=True),
-                conv_layer(stem_width, stem_width, kernel_size=3, stride=1, padding=1, bias=False),
+                conv_layer(stem_width, stem_width, kernel_size=3, stride=1, padding=1, bias=False, **conv_kwargs),
                 norm_layer(stem_width),
                 nn.ReLU(inplace=True),
-                conv_layer(stem_width, stem_width*2, kernel_size=3, stride=1, padding=1, bias=False),
+                conv_layer(stem_width, stem_width*2, kernel_size=3, stride=1, padding=1, bias=False, **conv_kwargs),
             )
         else:
             self.conv1 = conv_layer(3, 64, kernel_size=7, stride=2, padding=3,
-                                   bias=False)
+                                   bias=False, **conv_kwargs)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -221,6 +281,7 @@ class ResNet(nn.Module):
                                 bottleneck_width=self.bottleneck_width,
                                 avd=self.avd, avd_first=self.avd_first,
                                 dilation=1, rectified_conv=self.rectified_conv,
+                                rectify_avg=self.rectify_avg,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
         elif dilation == 4:
@@ -229,6 +290,7 @@ class ResNet(nn.Module):
                                 bottleneck_width=self.bottleneck_width,
                                 avd=self.avd, avd_first=self.avd_first,
                                 dilation=2, rectified_conv=self.rectified_conv,
+                                rectify_avg=self.rectify_avg,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
         else:
@@ -241,6 +303,7 @@ class ResNet(nn.Module):
                                 bottleneck_width=self.bottleneck_width,
                                 avd=self.avd, avd_first=self.avd_first,
                                 dilation=dilation, rectified_conv=self.rectified_conv,
+                                rectify_avg=self.rectify_avg,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
 
@@ -265,6 +328,42 @@ class ResNet(nn.Module):
         x = self.fc(x)
 
         return x
+
+
+model_urls = {
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+}
+
+def resnet18(pretrained=False, **kwargs):
+    """Constructs a ResNet-18 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['resnet18']))
+    return model
+
+def resnet34(pretrained=False, **kwargs):
+    """Constructs a ResNet-34 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['resnet34']))
+    return model
+
+def resnet38(pretrained=False, **kwargs):
+    """Constructs a ResNet-34 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResNet(BasicBlock, [3, 4, 8, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['resnet34']))
+    return model
 
 
 def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
@@ -303,73 +402,3 @@ def resnet152(pretrained=False, root='~/.encoding/models', **kwargs):
             get_model_file('resnet152', root=root)), strict=False)
     return model
 
-def resnext50_32x4d(pretrained=False, root='~/.encoding/models', **kwargs):
-    r"""ResNeXt-50 32x4d model from
-    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    kwargs['groups'] = 32
-    kwargs['bottleneck_width'] = 4
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.load(
-            get_model_file('resnext50_32x4d', root=root)), strict=False)
-    return model
-
-def resnext101_32x8d(pretrained=False, root='~/.encoding/models', **kwargs):
-    r"""ResNeXt-101 32x8d model from
-    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    kwargs['groups'] = 32
-    kwargs['bottleneck_width'] = 8
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.load(
-            get_model_file('resnext50_32x4d', root=root)), strict=False)
-    return model
-
-def resnet50s(pretrained=False, root='~/.encoding/models', **kwargs):
-    """Constructs a ResNetS-50 model as in PSPNet.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    kwargs['deep_stem'] = True
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.load(
-            get_model_file('resnet50', root=root)), strict=False)
-    return model
-
-def resnet101s(pretrained=False, root='~/.encoding/models', **kwargs):
-    """Constructs a ResNetS-101 model as in PSPNet.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    kwargs['deep_stem'] = True
-    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.load(
-            get_model_file('resnet101', root=root)), strict=False)
-    return model
-
-def resnet152s(pretrained=False, root='~/.encoding/models', **kwargs):
-    """Constructs a ResNetS-152 model as in PSPNet.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    kwargs['deep_stem'] = True
-    model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.load(
-            get_model_file('resnet152', root=root)), strict=False)
-    return model

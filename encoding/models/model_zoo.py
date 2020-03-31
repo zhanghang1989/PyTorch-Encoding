@@ -1,8 +1,9 @@
 # pylint: disable=wildcard-import, unused-wildcard-import
 
 from .resnet import *
+from .resnext import *
 from .resnest import *
-from .resnest_ablation import *
+from .resnet_variants import *
 from .wideresnet import *
 from .fcn import *
 from .psp import *
@@ -31,11 +32,16 @@ def get_model(name, **kwargs):
         The model.
     """
     models = {
+        'resnet18': resnet18,
+        'resnet34': resnet34,
+        'resnet38': resnet38,
         'resnest50': resnest50,
         'resnet50d': resnet50d,
         'resnet50': resnet50,
         'resnet101': resnet101,
         'resnet152': resnet152,
+        'resnext50_32x4d': resnext50_32x4d,
+        'resnext101_32x8d': resnext101_32x8d,
         'xception65': xception65,
         'wideresnet38': wideresnet38,
         'wideresnet50': wideresnet50,
