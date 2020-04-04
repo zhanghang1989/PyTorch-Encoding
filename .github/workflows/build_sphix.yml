@@ -10,6 +10,10 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx sphinxcontrib-googleanalytics sphinx-rtd-theme
     - uses: actions/checkout@v1
     - uses: ammaraskar/sphinx-action@master
       with:
