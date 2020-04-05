@@ -78,7 +78,7 @@ class Segmentation(data.Dataset):
         else:
             ow = short
             oh = int(1.0 * h * ow / w)
-        img = img.resize((ow, oh), Image.BILINEAR)
+        img = img.resize((ow, oh), Image.BICUBIC)
         mask = mask.resize((ow, oh), Image.NEAREST)
         # center crop
         w, h = img.size
@@ -107,11 +107,11 @@ class Segmentation(data.Dataset):
             ow = long_size
             oh = int(1.0 * h * ow / w)
             short_size = oh
-        img = img.resize((ow, oh), Image.BILINEAR)
+        img = img.resize((ow, oh), Image.BICUBIC)
         mask = mask.resize((ow, oh), Image.NEAREST)
         # random rotate -10~10, mask using NN rotate
         deg = random.uniform(-10,10)
-        img = img.rotate(deg, resample=Image.BILINEAR)
+        img = img.rotate(deg, resample=Image.BICUBIC)
         mask = mask.rotate(deg, resample=Image.NEAREST)
         # pad crop
         if short_size < crop_size:

@@ -26,7 +26,7 @@ class _rectify(Function):
         if x.is_cuda:
             lib.gpu.conv_rectify(y, x, kernel_size, stride, padding, dilation, average)
         else:
-            raise NotImplementedError
+            lib.cpu.conv_rectify(y, x, kernel_size, stride, padding, dilation, average)
         ctx.mark_dirty(y)
         return y
 
@@ -37,7 +37,8 @@ class _rectify(Function):
             lib.gpu.conv_rectify(grad_y, x, ctx.kernel_size, ctx.stride,
                                  ctx.padding, ctx.dilation, ctx.average)
         else:
-            raise NotImplementedError
+            lib.cpu.conv_rectify(grad_y, x, ctx.kernel_size, ctx.stride,
+                                 ctx.padding, ctx.dilation, ctx.average)
         ctx.mark_dirty(grad_y)
         return grad_y, None, None, None, None, None, None
 

@@ -57,15 +57,7 @@ requirements = [
     'numpy',
     'tqdm',
     'nose',
-    'torch>=0.5.0',
-    'cffi>=1.0.0',
-]
-
-requirements = [
-    'numpy',
-    'tqdm',
-    'nose',
-    'torch>=0.4.0',
+    'torch>=1.4.0',
     'Pillow',
     'scipy',
     'requests',

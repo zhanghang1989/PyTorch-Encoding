@@ -173,7 +173,7 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.dropblock_prob > 0.0:
         from functools import partial
         from encoding.nn import reset_dropblock
-        nr_iters = (args.epochs - 2 * args.warmup_epochs) * len(train_loader)
+        nr_iters = (args.epochs - args.warmup_epochs) * len(train_loader)
         apply_drop_prob = partial(reset_dropblock, args.warmup_epochs*len(train_loader),
                                   nr_iters, 0.0, args.dropblock_prob)
         model.apply(apply_drop_prob)

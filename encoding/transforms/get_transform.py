@@ -9,7 +9,7 @@ import torch
 from torchvision.transforms import *
 from .transforms import *
 
-def get_transform(dataset, base_size=None, crop_size=224, rand_aug=False, etrans=False, **kwargs):
+def get_transform(dataset, base_size=None, crop_size=224, rand_aug=False, etrans=True, **kwargs):
     normalize = Normalize(mean=[0.485, 0.456, 0.406],
                           std=[0.229, 0.224, 0.225])
     base_size = base_size if base_size is not None else int(1.0 * crop_size / 0.875)

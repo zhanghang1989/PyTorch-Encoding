@@ -50,7 +50,7 @@ class BaseDataset(data.Dataset):
         else:
             ow = short_size
             oh = int(1.0 * h * ow / w)
-        img = img.resize((ow, oh), Image.BILINEAR)
+        img = img.resize((ow, oh), Image.BICUBIC)
         mask = mask.resize((ow, oh), Image.NEAREST)
         # center crop
         w, h = img.size
@@ -77,7 +77,7 @@ class BaseDataset(data.Dataset):
             ow = long_size
             oh = int(1.0 * h * long_size / w + 0.5)
             short_size = oh
-        img = img.resize((ow, oh), Image.BILINEAR)
+        img = img.resize((ow, oh), Image.BICUBIC)
         mask = mask.resize((ow, oh), Image.NEAREST)
         # pad crop
         if short_size < crop_size:

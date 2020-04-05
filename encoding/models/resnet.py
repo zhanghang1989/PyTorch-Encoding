@@ -14,9 +14,8 @@ from ..nn import GlobalAvgPool2d, RFConv2d, SplAtConv2d, DropBlock2D
 from ..models.model_store import get_model_file
 
 __all__ = ['ResNet', 'Bottleneck',
-           'resnet18', 'resnet34', 'resnet38',
+           'resnet18', 'resnet34',
            'resnet50', 'resnet101', 'resnet152']
-
 
 class BasicBlock(nn.Module):
     """ResNet BasicBlock
@@ -77,7 +76,7 @@ class Bottleneck(nn.Module):
                  norm_layer=None, dropblock_prob=0.0, last_gamma=False):
         super(Bottleneck, self).__init__()
         group_width = int(planes * (bottleneck_width / 64.)) * cardinality
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
+        self.conv1 = nn.Conv2d(inplanes, group_width, kernel_size=1, bias=False)
         self.bn1 = norm_layer(planes)
         self.dropblock_prob = dropblock_prob
         self.radix = radix
@@ -85,7 +84,7 @@ class Bottleneck(nn.Module):
         self.avd_first = avd_first
 
         if self.avd:
-            self.avd_layer = nn.AvgPool2d(3, stride, padding=1)
+            self.avd_layer = nn.AvgPool2d(3, stride, padding=1, count_include_pad=False)
             stride = 1
 
         if dropblock_prob > 0.0:
@@ -96,7 +95,7 @@ class Bottleneck(nn.Module):
 
         if radix > 1:
             self.conv2 = SplAtConv2d(
-                planes, planes, kernel_size=3,
+                group_width, group_width, kernel_size=3,
                 stride=stride, padding=dilation,
                 dilation=dilation, groups=cardinality, bias=False,
                 radix=radix, rectify=rectified_conv,
@@ -105,18 +104,18 @@ class Bottleneck(nn.Module):
                 dropblock_prob=dropblock_prob)
         elif rectified_conv:
             self.conv2 = RFConv2d(
-                planes, planes, kernel_size=3, stride=stride,
+                group_width, group_width, kernel_size=3, stride=stride,
                 padding=dilation, dilation=dilation, bias=False,
                 average_mode=rectify_avg)
             self.bn2 = norm_layer(planes)
         else:
             self.conv2 = nn.Conv2d(
-                planes, planes, kernel_size=3, stride=stride,
+                group_width, group_width, kernel_size=3, stride=stride,
                 padding=dilation, dilation=dilation, bias=False)
             self.bn2 = norm_layer(planes)
 
         self.conv3 = nn.Conv2d(
-            planes, planes * 4, kernel_size=1, bias=False)
+            group_width, planes * 4, kernel_size=1, bias=False)
         self.bn3 = norm_layer(planes*4)
 
         if last_gamma:
@@ -354,17 +353,6 @@ def resnet34(pretrained=False, **kwargs):
     if pretrained:
         model.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['resnet34']))
     return model
-
-def resnet38(pretrained=False, **kwargs):
-    """Constructs a ResNet-34 model.
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-    model = ResNet(BasicBlock, [3, 4, 8, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['resnet34']))
-    return model
-
 
 def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
     """Constructs a ResNet-50 model.

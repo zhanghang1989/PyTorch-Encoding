@@ -41,9 +41,8 @@ def resnest200(pretrained=False, root='~/.encoding/models', **kwargs):
             get_model_file('resnest152', root=root)), strict=False)
     return model
 
-
 def resnest269(pretrained=False, root='~/.encoding/models', **kwargs):
-    model = ResNet(Bottleneck, [3, 24, 36, 3],
+    model = ResNet(Bottleneck, [3, 30, 48, 8],
                    radix=2, groups=1, bottleneck_width=64,
                    deep_stem=True, stem_width=64, avg_down=True,
                    avd=True, avd_first=False, **kwargs)
@@ -52,3 +51,22 @@ def resnest269(pretrained=False, root='~/.encoding/models', **kwargs):
             get_model_file('resnest269', root=root)), strict=False)
     return model
 
+def resnest50_fast(pretrained=False, root='~/.encoding/models', **kwargs):
+    model = ResNet(Bottleneck, [3, 4, 6, 3],
+                   radix=2, groups=1, bottleneck_width=64,
+                   deep_stem=True, stem_width=32, avg_down=True,
+                   avd=True, avd_first=True, **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnest50fast', root=root)), strict=False)
+    return model
+
+def resnest101_fast(pretrained=False, root='~/.encoding/models', **kwargs):
+    model = ResNet(Bottleneck, [3, 4, 23, 3],
+                   radix=2, groups=1, bottleneck_width=64,
+                   deep_stem=True, stem_width=64, avg_down=True,
+                   avd=True, avd_first=True, **kwargs)
+    if pretrained:
+        model.load_state_dict(torch.load(
+            get_model_file('resnest101fast', root=root)), strict=False)
+    return model

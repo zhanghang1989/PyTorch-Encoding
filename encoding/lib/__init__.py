@@ -12,6 +12,7 @@ cpu = load('enclib_cpu', [
         os.path.join(cpu_path, 'syncbn_cpu.cpp'),
         os.path.join(cpu_path, 'roi_align_cpu.cpp'),
         os.path.join(cpu_path, 'nms_cpu.cpp'),
+        os.path.join(cpu_path, 'rectify_cpu.cpp'),
     ], build_directory=cpu_path, verbose=False)
 
 if torch.cuda.is_available():

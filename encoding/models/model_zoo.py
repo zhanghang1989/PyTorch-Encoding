@@ -34,8 +34,10 @@ def get_model(name, **kwargs):
     models = {
         'resnet18': resnet18,
         'resnet34': resnet34,
-        'resnet38': resnet38,
         'resnest50': resnest50,
+        'resnest101': resnest101,
+        'resnest200': resnest200,
+        'resnest269': resnest269,
         'resnet50d': resnet50d,
         'resnet50': resnet50,
         'resnet101': resnet101,

@@ -30,9 +30,9 @@ def resnext101_32x8d(pretrained=False, root='~/.encoding/models', **kwargs):
     """
     kwargs['groups'] = 32
     kwargs['bottleneck_width'] = 8
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     if pretrained:
         model.load_state_dict(torch.load(
-            get_model_file('resnext50_32x4d', root=root)), strict=False)
+            get_model_file('resnext101_32x8d', root=root)), strict=False)
     return model
 
