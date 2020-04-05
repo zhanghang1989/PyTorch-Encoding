@@ -77,7 +77,7 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         group_width = int(planes * (bottleneck_width / 64.)) * cardinality
         self.conv1 = nn.Conv2d(inplanes, group_width, kernel_size=1, bias=False)
-        self.bn1 = norm_layer(planes)
+        self.bn1 = norm_layer(group_width)
         self.dropblock_prob = dropblock_prob
         self.radix = radix
         self.avd = avd and (stride > 1 or dilation > 1)
@@ -105,14 +105,16 @@ class Bottleneck(nn.Module):
         elif rectified_conv:
             self.conv2 = RFConv2d(
                 group_width, group_width, kernel_size=3, stride=stride,
-                padding=dilation, dilation=dilation, bias=False,
+                padding=dilation, dilation=dilation,
+                groups=cardinality, bias=False,
                 average_mode=rectify_avg)
-            self.bn2 = norm_layer(planes)
+            self.bn2 = norm_layer(group_width)
         else:
             self.conv2 = nn.Conv2d(
                 group_width, group_width, kernel_size=3, stride=stride,
-                padding=dilation, dilation=dilation, bias=False)
-            self.bn2 = norm_layer(planes)
+                padding=dilation, dilation=dilation,
+                groups=cardinality, bias=False)
+            self.bn2 = norm_layer(group_width)
 
         self.conv3 = nn.Conv2d(
             group_width, planes * 4, kernel_size=1, bias=False)
