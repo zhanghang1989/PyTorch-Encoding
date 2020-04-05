@@ -37,6 +37,7 @@ class DistSyncBatchNorm(_BatchNorm):
                                self.momentum, self.training, self.process_group)
         return y.view(input_shape)
 
+
 class SyncBatchNorm(_BatchNorm):
     r"""Cross-GPU Synchronized Batch normalization (SyncBN)
 
@@ -102,6 +103,8 @@ class SyncBatchNorm(_BatchNorm):
         self.worker_ids = self.devices[1:]
         self.master_queue = Queue(len(self.worker_ids))
         self.worker_queues = [Queue(1) for _ in self.worker_ids]
+        # running_exs
+        #self.register_buffer('running_exs', torch.ones(num_features))
 
     def forward(self, x):
         # Resize the input to (B, C, -1).
@@ -138,7 +141,6 @@ class SyncBatchNorm(_BatchNorm):
             return 'sync={}, act={}, slope={}, inplace={}'.format(
                 self.sync, self.activation, self.slope, self.inplace
             )
-
 
 class BatchNorm1d(SyncBatchNorm):
     r"""

@@ -32,22 +32,28 @@ def get_model(name, **kwargs):
         The model.
     """
     models = {
+        # resnet
         'resnet18': resnet18,
         'resnet34': resnet34,
+        'resnet50': resnet50,
+        'resnet101': resnet101,
+        'resnet152': resnet152,
+        # resnest
         'resnest50': resnest50,
         'resnest101': resnest101,
         'resnest200': resnest200,
         'resnest269': resnest269,
+        # resnet other variants
         'resnet50d': resnet50d,
-        'resnet50': resnet50,
-        'resnet101': resnet101,
-        'resnet152': resnet152,
         'resnext50_32x4d': resnext50_32x4d,
         'resnext101_32x8d': resnext101_32x8d,
+        # other segmentation backbones
         'xception65': xception65,
         'wideresnet38': wideresnet38,
         'wideresnet50': wideresnet50,
+        # deepten paper
         'deepten_resnet50_minc': get_deepten_resnet50_minc,
+        # segmentation models
         'fcn_resnet50_pcontext': get_fcn_resnet50_pcontext,
         'encnet_resnet50_pcontext': get_encnet_resnet50_pcontext,
         'encnet_resnet101_pcontext': get_encnet_resnet101_pcontext,

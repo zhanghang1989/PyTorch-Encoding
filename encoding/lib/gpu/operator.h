@@ -51,12 +51,12 @@ std::vector<at::Tensor> ScaledL2_Backward_CUDA(
   const at::Tensor SL_);
 
 at::Tensor BatchNorm_Forward_CUDA(
-    const at::Tensor input_, 
-    const at::Tensor ex_,
-    const at::Tensor exs_,
-    const at::Tensor gamma_,
-    const at::Tensor beta_,
-    float eps);
+  const at::Tensor input_, 
+  const at::Tensor mean_,
+  const at::Tensor std_,
+  const at::Tensor gamma_,
+  const at::Tensor beta_,
+  float eps);
 
 at::Tensor BatchNorm_Forward_Inp_CUDA(
     const at::Tensor input_, 

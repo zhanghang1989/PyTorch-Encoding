@@ -5,7 +5,7 @@ Install and Citations
 Installation
 ------------
 
-    * Install PyTorch 1.0.0 by following the `PyTorch instructions <http://pytorch.org/>`_.
+    * Install PyTorch 1.4.0 by following the `PyTorch instructions <http://pytorch.org/>`_.
  
     * PIP Install::
 

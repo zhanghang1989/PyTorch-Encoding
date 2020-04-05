@@ -190,8 +190,6 @@ def main():
         criterion.cuda()
         # Please use CUDA_VISIBLE_DEVICES to control the number of gpus
         model = nn.DataParallel(model)
-
-    # checkpoint
     if args.resume is not None:
         if os.path.isfile(args.resume):
             print("=> loading checkpoint '{}'".format(args.resume))
