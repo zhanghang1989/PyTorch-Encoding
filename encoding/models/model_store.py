@@ -7,16 +7,22 @@ import zipfile
 from ..utils import download, check_sha1
 
 _model_sha1 = {name: checksum for checksum, name in [
+    # resnet
+    ('25c4b50959ef024fcc050213a06b614899f94b3d', 'resnet50'),
+    ('2a57e44de9c853fa015b172309a1ee7e2d0e4e2a', 'resnet101'),
+    ('0d43d698c66aceaa2bc0309f55efdd7ff4b143af', 'resnet152'),
+    # resnest
     ('fb9de5b360976e3e8bd3679d3e93c5409a5eff3c', 'resnest50'),
     ('966fb78c22323b0c68097c5c1242bd16d3e07fd5', 'resnest101'),
     ('d7fd712f5a1fcee5b3ce176026fbb6d0d278454a', 'resnest200'),
     ('b743074c6fc40f88d7f53e8affb350de38f4f49d', 'resnest269'),
-    ('25c4b50959ef024fcc050213a06b614899f94b3d', 'resnet50'),
-    ('2a57e44de9c853fa015b172309a1ee7e2d0e4e2a', 'resnet101'),
-    ('0d43d698c66aceaa2bc0309f55efdd7ff4b143af', 'resnet152'),
+    # resnet other variants
+    # other segmentation backbones
     ('da4785cfc837bf00ef95b52fb218feefe703011f', 'wideresnet38'),
     ('b41562160173ee2e979b795c551d3c7143b1e5b5', 'wideresnet50'),
+    # deepten paper
     ('1225f149519c7a0113c43a056153c1bb15468ac0', 'deepten_resnet50_minc'),
+    # segmentation models
     ('662e979de25a389f11c65e9f1df7e06c2c356381', 'fcn_resnet50_ade'),
     ('eeed8e582f0fdccdba8579e7490570adc6d85c7c', 'fcn_resnet50_pcontext'),
     ('54f70c772505064e30efd1ddd3a14e1759faa363', 'psp_resnet50_ade'),
