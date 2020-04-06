@@ -27,6 +27,10 @@ jobs:
           pip install numpy -I
           pip install pytest torch
           
+      - name: Install package
+        run: |
+          pip install -e .[test]
+          
       - uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
