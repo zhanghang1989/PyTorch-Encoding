@@ -46,6 +46,5 @@ jobs:
         if: success()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _build/html/
