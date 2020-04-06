@@ -66,7 +66,7 @@ jobs:
           
           
       - name: Comment
-        if: sucess()
+        if: success()
         uses: unsplash/comment-on-pr@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
