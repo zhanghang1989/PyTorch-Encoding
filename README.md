@@ -2,6 +2,7 @@
 [![PyPI Pre-release](https://img.shields.io/badge/pypi--prerelease-v1.1.0-ff69b4.svg)](https://pypi.org/project/torch-encoding/#history)
 [![Upload Python Package](https://github.com/zhanghang1989/PyTorch-Encoding/workflows/Upload%20Python%20Package/badge.svg)](https://github.com/zhanghang1989/PyTorch-Encoding/actions)
 [![Downloads](http://pepy.tech/badge/torch-encoding)](http://pepy.tech/project/torch-encoding)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # PyTorch-Encoding
 

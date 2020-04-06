@@ -26,16 +26,6 @@ All provided models have been verified.
 .. autoclass:: ResNet
     :members:
 
-:hidden:`resnet18`
-~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: resnet18
-
-:hidden:`resnet34`
-~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: resnet34
-
 :hidden:`resnet50`
 ~~~~~~~~~~~~~~~~~~
 
