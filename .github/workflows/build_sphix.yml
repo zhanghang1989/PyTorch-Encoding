@@ -41,11 +41,12 @@ jobs:
           cd docs/
           make html
           
-      # https://github.com/peaceiris/actions-gh-pages
+      # https://github.com/marketplace/actions/github-pages
       - name: Deploy
         if: success()
-        uses: peaceiris/actions-gh-pages@v3
+        uses: crazy-max/ghaction-github-pages@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/html/
-          publish_branch: gh-pages
+          build_dir: _build/html/
+          target_branch: gh-pages
