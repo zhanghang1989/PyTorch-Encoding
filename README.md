@@ -1,3 +1,4 @@
+[![Build Docs](https://github.com/zhanghang1989/PyTorch-Encoding/workflows/Build%20Docs/badge.svg)](https://github.com/zhanghang1989/PyTorch-Encoding/actions)
 # PyTorch-Encoding
 
 created by [Hang Zhang](http://hangzh.com/)
