@@ -67,8 +67,7 @@ jobs:
           
       - name: Comment
         if: success()
-        uses: unsplash/comment-on-pr@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: thollander/actions-comment-pull-request@master
         with:
-          msg: "The docs are uploaded to ${{ secrets.DEST_DIR }}/${PULL_NUMBER}/index.html"
+          message: "The docs are uploaded to http://${{ secrets.AWS_S3_BUCKET }}.s3.amazonaws.com/${{ secrets.DEST_DIR }}/${PULL_NUMBER}/index.html"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
