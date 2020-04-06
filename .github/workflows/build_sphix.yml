@@ -44,9 +44,9 @@ jobs:
       # https://github.com/peaceiris/actions-gh-pages
       - name: Deploy
         if: success()
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v3.5.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _build/html/
           publish_branch: gh-pages
-          force_orphan: false
+          force_orphan: true
