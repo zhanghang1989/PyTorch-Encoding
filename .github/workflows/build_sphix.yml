@@ -31,6 +31,11 @@ jobs:
         run: |
           pip install -e .
           
-      - uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
+      - name: Install Sphix Dependencies
+        run: |
+          cd docs/
+          pip install -r requirements.txt
+          
+      - name: Build Sphinx docs
+        run: |
+          make html
