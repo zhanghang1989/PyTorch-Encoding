@@ -40,8 +40,9 @@ class FCN(BaseNet):
     >>> print(model)
     """
     def __init__(self, nclass, backbone, aux=True, se_loss=False, with_global=False,
-                 norm_layer=SyncBatchNorm, **kwargs):
-        super(FCN, self).__init__(nclass, backbone, aux, se_loss, norm_layer=norm_layer, **kwargs)
+                 norm_layer=SyncBatchNorm, *args, **kwargs):
+        super(FCN, self).__init__(nclass, backbone, aux, se_loss, norm_layer=norm_layer,
+                                  *args, **kwargs)
         self.head = FCNHead(2048, nclass, norm_layer, self._up_kwargs, with_global)
         if aux:
             self.auxlayer = FCNHead(1024, nclass, norm_layer)

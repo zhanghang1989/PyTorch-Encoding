@@ -26,15 +26,24 @@ __all__ = ['DistSyncBatchNorm', 'SyncBatchNorm', 'BatchNorm1d', 'BatchNorm2d', '
 
 class DistSyncBatchNorm(_BatchNorm):
     def __init__(self, num_features, eps=1e-5, momentum=0.1, process_group=None):
-        super(SyncBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=True)
+        super(DistSyncBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=True)
         self.process_group = process_group
 
     def forward(self, x):
+        need_sync = self.training or not self.track_running_stats
+        if need_sync:
+            process_group = torch.distributed.group.WORLD
+            if self.process_group:
+                process_group = self.process_group
+            world_size = torch.distributed.get_world_size(process_group)
+            need_sync = world_size > 1
+
         # Resize the input to (B, C, -1).
         input_shape = x.size()
         x = x.view(input_shape[0], self.num_features, -1)
-        y = dist_syncbatchnorm(self.weight, self.bias, self.running_mean, self.running_var, self.eps,
-                               self.momentum, self.training, self.process_group)
+        #def forward(ctx, x, gamma, beta, running_mean, running_var, eps, momentum, training, process_group):
+        y = dist_syncbatchnorm(x, self.weight, self.bias, self.running_mean, self.running_var,
+                               self.eps, self.momentum, self.training, process_group)
         return y.view(input_shape)
 
 

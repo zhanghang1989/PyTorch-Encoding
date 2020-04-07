@@ -38,7 +38,7 @@ class Options():
         parser.add_argument('--mixup', type=float, default=0.0,
                             help='mixup (default eta: 0.0)')
         parser.add_argument('--rand-aug', action='store_true', 
-                            default=False, help='rectify convolution')
+                            default=False, help='random augment')
         # model params 
         parser.add_argument('--model', type=str, default='densenet',
                             help='network model type (default: densenet)')

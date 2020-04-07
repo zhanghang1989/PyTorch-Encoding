@@ -14,18 +14,65 @@ from torch.nn.parallel.data_parallel import DataParallel
 from torch.nn.parallel.parallel_apply import parallel_apply
 from torch.nn.parallel.scatter_gather import scatter
 
-from . import resnet
-from . import wideresnet
 from ..utils import batch_pix_accuracy, batch_intersection_union
+
+from .resnet import *
+from .resnext import *
+from .resnest import *
+from .resnet_variants import *
+from .wideresnet import *
+from .xception import *
 
 up_kwargs = {'mode': 'bilinear', 'align_corners': True}
 
 __all__ = ['BaseNet', 'MultiEvalModule']
 
+def get_backbone(name, **kwargs):
+    """Returns a pre-defined model by name
+
+    Parameters
+    ----------
+    name : str
+        Name of the model.
+    pretrained : bool
+        Whether to load the pretrained weights for model.
+    root : str, default '~/.encoding/models'
+        Location for keeping the model parameters.
+
+    Returns
+    -------
+    Module:
+        The model.
+    """
+    models = {
+        # resnet
+        'resnet50': resnet50,
+        'resnet101': resnet101,
+        'resnet152': resnet152,
+        # resnest
+        'resnest50': resnest50,
+        'resnest101': resnest101,
+        'resnest200': resnest200,
+        'resnest269': resnest269,
+        # resnet other variants
+        'resnet50d': resnet50d,
+        'resnext50_32x4d': resnext50_32x4d,
+        'resnext101_32x8d': resnext101_32x8d,
+        # other segmentation backbones
+        'xception65': xception65,
+        'wideresnet38': wideresnet38,
+        'wideresnet50': wideresnet50,
+        }
+    name = name.lower()
+    if name not in models:
+        raise ValueError('%s\n\t%s' % (str(name), '\n\t'.join(sorted(models.keys()))))
+    net = models[name](**kwargs)
+    return net
+
 class BaseNet(nn.Module):
     def __init__(self, nclass, backbone, aux, se_loss, dilated=True, norm_layer=None,
                  base_size=520, crop_size=480, mean=[.485, .456, .406],
-                 std=[.229, .224, .225], root='~/.encoding/models'):
+                 std=[.229, .224, .225], root='~/.encoding/models', *args, **kwargs):
         super(BaseNet, self).__init__()
         self.nclass = nclass
         self.aux = aux
@@ -36,24 +83,11 @@ class BaseNet(nn.Module):
         self.crop_size = crop_size
         # copying modules from pretrained models
         self.backbone = backbone
-        if backbone == 'resnet50':
-            self.pretrained = resnet.resnet50s(pretrained=True, dilated=dilated,
-                                              norm_layer=norm_layer, root=root)
-        elif backbone == 'resnet101':
-            self.pretrained = resnet.resnet101s(pretrained=True, dilated=dilated,
-                                               norm_layer=norm_layer, root=root)
-        elif backbone == 'resnet152':
-            self.pretrained = resnet.resnet152s(pretrained=True, dilated=dilated,
-                                               norm_layer=norm_layer, root=root)
-        elif backbone == 'wideresnet38':
-            self.pretrained = wideresnet.wideresnet38(pretrained=True, dilated=dilated,
-                                                      root=root)
-        elif backbone == 'wideresnet50':
-            self.pretrained = wideresnet.wideresnet50(pretrained=True, dilated=dilated,
-                                                      root=root)
-        else:
-            raise RuntimeError('unknown backbone: {}'.format(backbone))
-        # bilinear upsample options
+
+        self.pretrained = get_backbone(backbone, pretrained=True, dilated=dilated,
+                                       norm_layer=norm_layer, root=root,
+                                       *args, **kwargs)
+        self.pretrained.fc = None
         self._up_kwargs = up_kwargs
 
     def base_forward(self, x):

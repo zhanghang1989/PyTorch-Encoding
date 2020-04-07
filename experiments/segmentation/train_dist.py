@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 import torch
 from torch.utils import data
+import torch.distributed as dist
 import torch.multiprocessing as mp
 import torchvision.transforms as transform
 from torch.nn.parallel.scatter_gather import gather
@@ -35,9 +36,13 @@ class Options():
                             help='model name (default: encnet)')
         parser.add_argument('--backbone', type=str, default='resnet50',
                             help='backbone name (default: resnet50)')
+        parser.add_argument('--rectify', action='store_true', 
+                            default=False, help='rectify convolution')
+        parser.add_argument('--rectify-avg', action='store_true', 
+                            default=False, help='rectify convolution')
         parser.add_argument('--dataset', type=str, default='ade20k',
                             help='dataset name (default: pascal12)')
-        parser.add_argument('--workers', type=int, default=16,
+        parser.add_argument('--workers', type=int, default=8,
                             metavar='N', help='dataloader threads')
         parser.add_argument('--base-size', type=int, default=520,
                             help='base image size')
@@ -94,6 +99,15 @@ class Options():
         # test option
         parser.add_argument('--test-folder', type=str, default=None,
                             help='path to test image folder')
+        # distributed
+        parser.add_argument('--world-size', default=1, type=int,
+                            help='number of nodes for distributed training')
+        parser.add_argument('--rank', default=0, type=int,
+                            help='node rank for distributed training')
+        parser.add_argument('--dist-url', default='tcp://localhost:23456', type=str,
+                            help='url used to set up distributed training')
+        parser.add_argument('--dist-backend', default='nccl', type=str,
+                            help='distributed backend')
         # the parser
         self.parser = parser
 
@@ -106,7 +120,7 @@ class Options():
                 'pascal_aug': 80,
                 'pascal_voc': 50,
                 'pcontext': 80,
-                'ade20k': 180,
+                'ade20k': 120,
                 'citys': 240,
             }
             args.epochs = epoches[args.dataset.lower()]
@@ -116,8 +130,8 @@ class Options():
                 'pascal_aug': 0.001,
                 'pascal_voc': 0.0001,
                 'pcontext': 0.001,
-                'ade20k': 0.004,
-                'citys': 0.004,
+                'ade20k': 0.01,
+                'citys': 0.01,
             }
             args.lr = lrs[args.dataset.lower()] / 16 * args.batch_size
         print(args)
@@ -149,19 +163,24 @@ def main_worker(gpu, ngpus_per_node, args):
     data_kwargs = {'transform': input_transform, 'base_size': args.base_size,
                    'crop_size': args.crop_size}
     trainset = get_dataset(args.dataset, split=args.train_split, mode='train', **data_kwargs)
-    testset = get_dataset(args.dataset, split='val', mode ='val', **data_kwargs)
+    valset = get_dataset(args.dataset, split='val', mode ='val', **data_kwargs)
     train_sampler = torch.utils.data.distributed.DistributedSampler(trainset)
     val_sampler = torch.utils.data.distributed.DistributedSampler(valset, shuffle=False)
     # dataloader
     kwargs = {'batch_size': args.batch_size, 'num_workers': args.workers, 'pin_memory': True}
     trainloader = data.DataLoader(trainset, sampler=train_sampler, **kwargs)
-    valloader = data.DataLoader(testset, sampler=val_sampler, **kwargs)
+    valloader = data.DataLoader(valset, sampler=val_sampler, **kwargs)
     nclass = trainset.num_class
     # model
+    model_kwargs = {}
+    if args.rectify:
+        model_kwargs['rectified_conv'] = True
+        model_kwargs['rectify_avg'] = args.rectify_avg
     model = get_segmentation_model(args.model, dataset=args.dataset,
-                                   backbone = args.backbone, aux = args.aux,
-                                   se_loss = args.se_loss, norm_layer=DistSyncBatchNorm,
-                                   base_size=args.base_size, crop_size=args.crop_size)
+                                   backbone=args.backbone, aux=args.aux,
+                                   se_loss=args.se_loss, norm_layer=DistSyncBatchNorm,
+                                   base_size=args.base_size, crop_size=args.crop_size,
+                                   **model_kwargs)
     if args.gpu == 0:
         print(model)
     # optimizer using different LR
@@ -213,7 +232,8 @@ def main_worker(gpu, ngpus_per_node, args):
             scheduler(optimizer, i, epoch, best_pred)
             optimizer.zero_grad()
             outputs = model(image)
-            loss = criterion(outputs, target)
+            target = target.cuda(args.gpu)
+            loss = criterion(*outputs, target)
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
@@ -260,10 +280,10 @@ def main_worker(gpu, ngpus_per_node, args):
         }, args, is_best)
 
     if args.gpu == 0:
-        print('Starting Epoch:', trainer.args.start_epoch)
-        print('Total Epoches:', trainer.args.epochs)
+        print('Starting Epoch:', args.start_epoch)
+        print('Total Epoches:', args.epochs)
 
-    for epoch in range(trainer.args.start_epoch, trainer.args.epochs):
+    for epoch in range(args.start_epoch, args.epochs):
         tic = time.time()
         training(epoch)
         if epoch % 10 == 0:

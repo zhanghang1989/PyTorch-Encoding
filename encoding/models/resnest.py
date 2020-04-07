@@ -7,7 +7,9 @@
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """ResNeSt models"""
 
+import torch
 from .resnet import ResNet, Bottleneck
+from .model_store import get_model_file
 
 __all__ = ['resnest50', 'resnest101', 'resnest200', 'resnest269']
 

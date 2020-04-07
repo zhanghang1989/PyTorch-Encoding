@@ -41,13 +41,13 @@ class dist_syncbatchnorm_(Function):
             raise NotImplemented
 
         count = torch.Tensor([1]).to(x.device)
-        count = torch.distributed.all_reduce(count, group=process_group, async_op=True)
-        _ex = torch.distributed.all_reduce(_ex, group=process_group, async_op=True)
-        _exs = torch.distributed.all_reduce(_exs, group=process_group, async_op=True)
+        count_all_reduce = torch.distributed.all_reduce(count, group=process_group, async_op=True)
+        _ex_all_reduce = torch.distributed.all_reduce(_ex, group=process_group, async_op=True)
+        _exs_all_reduce = torch.distributed.all_reduce(_exs, group=process_group, async_op=True)
 
-        count.wait()
-        _ex.wait()
-        _exs.wait()
+        count_all_reduce.wait()
+        _ex_all_reduce.wait()
+        _exs_all_reduce.wait()
 
         _ex = _ex / count
         _exs = _exs / count
@@ -69,7 +69,7 @@ class dist_syncbatchnorm_(Function):
         return y
 
     @staticmethod
-    def backward(self, dz):
+    def backward(ctx, dz):
         x, _ex, _exs, gamma, beta = ctx.saved_tensors
         dz = dz.contiguous()
 
@@ -81,15 +81,15 @@ class dist_syncbatchnorm_(Function):
             raise NotImplemented
 
         if ctx.training:
-            process_group = self.process_group
+            process_group = ctx.process_group
             count = torch.Tensor([1]).to(x.device)
-            count = torch.distributed.all_reduce(count, group=process_group, async_op=True)
-            _dex = torch.distributed.all_reduce(_dex, group=process_group, async_op=True)
-            _dexs = torch.distributed.all_reduce(_dexs, group=process_group, async_op=True)
+            count_all_reduce = torch.distributed.all_reduce(count, group=process_group, async_op=True)
+            _dex_all_reduce = torch.distributed.all_reduce(_dex, group=process_group, async_op=True)
+            _dexs_all_reduce = torch.distributed.all_reduce(_dexs, group=process_group, async_op=True)
 
-            count.wait()
-            _dex.wait()
-            _dexs.wait()
+            count_all_reduce.wait()
+            _dex_all_reduce.wait()
+            _dexs_all_reduce.wait()
 
             _dex = _dex / count
             _dexs = _dexs / count
