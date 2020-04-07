@@ -31,6 +31,7 @@ class DistSyncBatchNorm(_BatchNorm):
 
     def forward(self, x):
         need_sync = self.training or not self.track_running_stats
+        process_group = None
         if need_sync:
             process_group = torch.distributed.group.WORLD
             if self.process_group:

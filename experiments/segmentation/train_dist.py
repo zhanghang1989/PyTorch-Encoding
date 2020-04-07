@@ -11,6 +11,7 @@ import time
 import argparse
 import numpy as np
 from tqdm import tqdm
+from mpi4py import MPI
 
 import torch
 from torch.utils import data
@@ -137,6 +138,14 @@ class Options():
         print(args)
         return args
 
+def mpi_avg_all(*args):
+    comm = MPI.COMM_WORLD
+    # send to master
+    sum_args = []
+    for arg in args:
+        sum_args.append(sum(comm.gather(arg, root=0))/len(args))
+    return tuple(sum_args)
+
 def main():
     args = Options().parse()
     ngpus_per_node = torch.cuda.device_count()
@@ -144,7 +153,10 @@ def main():
     args.lr = args.lr * args.world_size
     mp.spawn(main_worker, nprocs=ngpus_per_node, args=(ngpus_per_node, args))
 
+best_pred = 0.0
+
 def main_worker(gpu, ngpus_per_node, args):
+    global best_pred
     args.gpu = gpu
     args.rank = args.rank * ngpus_per_node + gpu
     print('rank: {} / {}'.format(args.rank, args.world_size))
@@ -168,7 +180,7 @@ def main_worker(gpu, ngpus_per_node, args):
     val_sampler = torch.utils.data.distributed.DistributedSampler(valset, shuffle=False)
     # dataloader
     kwargs = {'batch_size': args.batch_size, 'num_workers': args.workers, 'pin_memory': True}
-    trainloader = data.DataLoader(trainset, sampler=train_sampler, **kwargs)
+    trainloader = data.DataLoader(trainset, sampler=train_sampler, drop_last=True, **kwargs)
     valloader = data.DataLoader(valset, sampler=val_sampler, **kwargs)
     nclass = trainset.num_class
     # model
@@ -203,6 +215,7 @@ def main_worker(gpu, ngpus_per_node, args):
     model.cuda(args.gpu)
     criterion.cuda(args.gpu)
     model = DistributedDataParallel(model, device_ids=[args.gpu])
+    metric = utils.SegmentationMetric(nclass=nclass)
 
     # resuming checkpoint
     if args.resume is not None:
@@ -223,11 +236,12 @@ def main_worker(gpu, ngpus_per_node, args):
     # lr scheduler
     scheduler = utils.LR_Scheduler_Head(args.lr_scheduler, args.lr,
                                         args.epochs, len(trainloader))
-    best_pred = 0.0
 
     def training(epoch):
+        global best_pred
         train_loss = 0.0
         model.train()
+        tic = time.time()
         for i, (image, target) in enumerate(trainloader):
             scheduler(optimizer, i, epoch, best_pred)
             optimizer.zero_grad()
@@ -238,35 +252,30 @@ def main_worker(gpu, ngpus_per_node, args):
             optimizer.step()
             train_loss += loss.item()
             if i % 50 == 0 and args.gpu == 0:
-                print('Train loss: %.3f' % (train_loss / (i + 1)))
+                iter_per_sec = 50.0 / (time.time() - tic) if i != 0 else 1.0/ (time.time() - tic)
+                tic = time.time()
+                print('Epoch: {}, Iter: {}, Speed: {:.3f} iter/sec, Train loss: {:.3f}'. \
+                      format(epoch, i, iter_per_sec, train_loss / (i + 1)))
 
     def validation(epoch):
-        # Fast test during the training
-        def eval_batch(model, image, target):
-            outputs = model(image)
-            outputs = gather(outputs, 0, dim=0)
-            pred = outputs[0]
-            target = target.cuda(args.gpu)
-            correct, labeled = utils.batch_pix_accuracy(pred.data, target)
-            inter, union = utils.batch_intersection_union(pred.data, target, nclass)
-            return correct, labeled, inter, union
-
+        # Fast test during the training using single-crop only
+        global best_pred
         is_best = False
         model.eval()
-        total_inter, total_union, total_correct, total_label = 0, 0, 0, 0
+        metric.reset()
+
         for i, (image, target) in enumerate(valloader):
             with torch.no_grad():
-                correct, labeled, inter, union = eval_batch(model, image, target)
+                #correct, labeled, inter, union = eval_batch(model, image, target)
+                pred = model(image)[0]
+                target = target.cuda(args.gpu)
+                metric.update(target, pred)
 
-            total_correct += correct
-            total_label += labeled
-            total_inter += inter
-            total_union += union
-            pixAcc = 1.0 * total_correct / (np.spacing(1) + total_label)
-            IoU = 1.0 * total_inter / (np.spacing(1) + total_union)
-            mIoU = IoU.mean()
+            pixAcc, mIoU = metric.get()
             if i % 50 == 0 and args.gpu == 0:
                 print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
+        pixAcc, mIoU = mpi_avg_all(pixAcc, mIoU)
+        print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
 
         new_pred = (pixAcc + mIoU)/2
         if new_pred > best_pred:
@@ -283,6 +292,7 @@ def main_worker(gpu, ngpus_per_node, args):
         print('Starting Epoch:', args.start_epoch)
         print('Total Epoches:', args.epochs)
 
+    validation(0)
     for epoch in range(args.start_epoch, args.epochs):
         tic = time.time()
         training(epoch)
@@ -293,6 +303,7 @@ def main_worker(gpu, ngpus_per_node, args):
             print(f'Epoch: {epoch}, Time cost: {elapsed}')
 
     validation(epoch)
+
 
 if __name__ == "__main__":
     main()
