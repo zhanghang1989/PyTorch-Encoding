@@ -53,15 +53,17 @@ jobs:
       # https://github.com/marketplace/actions/github-pages
       - name: Deploy
         if: success()
-        #uses: jakejarvis/s3-sync-action@master
-        uses: opspresso/action-s3-sync@master
+        uses: jakejarvis/s3-sync-action@v0.5.0
+        with:
+          args: --acl public-read --follow-symlinks --delete
         env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          DEST_PATH: "s3://${{ secrets.AWS_S3_BUCKET }}/${{ secrets.DEST_DIR }}/${{ env.PULL_NUMBER }}/"
-          FROM_PATH: "docs/build/html/"
-          OPTIONS: "--acl public-read --follow-symlinks --delete"
+          DEST_DIR: "${{ secrets.DEST_DIR }}/${PULL_NUMBER}"
+          SOURCE_DIR: 'docs/build/html/'
+          
           
       - name: Comment
         if: success()
