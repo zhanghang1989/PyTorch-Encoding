@@ -38,19 +38,15 @@ Test Pre-trained Model
 .. role:: raw-html(raw)
    :format: html
 
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| Model                            | pixAcc    | mIoU      | Command                                                                                      |
-+==================================+===========+===========+==============================================================================================+
-| Encnet_ResNet50_PContext         | 79.2%     | 51.0%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc50_pcont')" class="toggleblock">cmd</a>`  |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet101_PContext        | 80.7%     | 54.1%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_pcont')" class="toggleblock">cmd</a>` |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet50_ADE              | 80.1%     | 41.5%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc50_ade')" class="toggleblock">cmd</a>`    |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet101_ADE             | 81.3%     | 44.4%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_ade')" class="toggleblock">cmd</a>`   |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet101_VOC             | N/A       | 85.9%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_voc')" class="toggleblock">cmd</a>`   |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
+============================  ========    ========    =============================================================================================
+Model                         pixAcc      mIoU        Command                                                                                      
+============================  ========    ========    =============================================================================================
+Encnet_ResNet50_PContext      79.2%       51.0%       :raw-html:`<a href="javascript:toggleblock('cmd_enc50_pcont')" class="toggleblock">cmd</a>`  
+EncNet_ResNet101_PContext     80.7%       54.1%       :raw-html:`<a href="javascript:toggleblock('cmd_enc101_pcont')" class="toggleblock">cmd</a>` 
+EncNet_ResNet50_ADE           80.1%       41.5%       :raw-html:`<a href="javascript:toggleblock('cmd_enc50_ade')" class="toggleblock">cmd</a>`    
+EncNet_ResNet101_ADE          81.3%       44.4%       :raw-html:`<a href="javascript:toggleblock('cmd_enc101_ade')" class="toggleblock">cmd</a>`   
+EncNet_ResNet101_VOC          N/A         85.9%       :raw-html:`<a href="javascript:toggleblock('cmd_enc101_voc')" class="toggleblock">cmd</a>`   
+============================  ========    ========    =============================================================================================
 
 
 .. raw:: html
