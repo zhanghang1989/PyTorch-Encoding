@@ -122,15 +122,6 @@ html_logo = '_static/img/icon.png'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_context = {
-    'css_files': [
-        'https://fonts.googleapis.com/css?family=Lato',
-        '_static/css/encoding.css'
-    ],
-}
-#'_static/css/hangzh.css'
-
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
