@@ -20,8 +20,14 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 import encoding
 import autorch_sphinx_theme
+import glob
+import shutil
+from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective
 
 
 # -- General configuration ------------------------------------------------
@@ -33,6 +39,7 @@ import autorch_sphinx_theme
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -43,6 +50,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    'sphinx_gallery.gen_gallery',
     # 'sphinxcontrib.googleanalytics',
 ]
 
@@ -88,7 +96,8 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns += ['*/index.rst']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -177,3 +186,12 @@ texinfo_documents = [
      author, 'Encoding', 'One line description of project.',
      'Miscellaneous'),
 ]
+
+def setup(app):
+    # Custom CSS
+    # app.add_stylesheet('css/pytorch_theme.css')
+    # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
+    # Custom directives
+    app.add_directive('includenodoc', IncludeDirective)
+    app.add_directive('galleryitem', GalleryItemDirective)
+    app.add_directive('customgalleryitem', CustomGalleryItemDirective)
