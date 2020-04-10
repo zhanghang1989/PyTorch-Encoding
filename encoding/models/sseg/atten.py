@@ -11,7 +11,7 @@ import torch.nn as nn
 from torch.nn.functional import interpolate
 
 from .base import BaseNet
-from ..nn import ACFModule, ConcurrentModule, SyncBatchNorm
+from ...nn import ACFModule, ConcurrentModule, SyncBatchNorm
 from .fcn import FCNHead
 from .encnet import EncModule
 
@@ -134,7 +134,7 @@ class ATTENHead(nn.Module):
         attn = self.atten.demo(feat)
         return attn
 
-def get_atten(dataset='pascal_voc', backbone='resnet50', pretrained=False,
+def get_atten(dataset='pascal_voc', backbone='resnet50s', pretrained=False,
               root='~/.encoding/models', **kwargs):
     r"""ATTEN model from the paper `"Fully Convolutional Network for semantic segmentation"
     <https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_atten.pdf>`_
@@ -150,11 +150,11 @@ def get_atten(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         Location for keeping the model parameters.
     Examples
     --------
-    >>> model = get_atten(dataset='pascal_voc', backbone='resnet50', pretrained=False)
+    >>> model = get_atten(dataset='pascal_voc', backbone='resnet50s', pretrained=False)
     >>> print(model)
     """
     # infer number of classes
-    from ..datasets import datasets, acronyms
+    from ...datasets import datasets, acronyms
     model = ATTEN(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, **kwargs)
     if pretrained:
         from .model_store import get_model_file

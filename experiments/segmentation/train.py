@@ -134,10 +134,8 @@ class Trainer():
         # dataset
         data_kwargs = {'transform': input_transform, 'base_size': args.base_size,
                        'crop_size': args.crop_size}
-        trainset = get_dataset(args.dataset, split=args.train_split, mode='train',
-                                           **data_kwargs)
-        testset = get_dataset(args.dataset, split='val', mode ='val',
-                                           **data_kwargs)
+        trainset = get_dataset(args.dataset, split=args.train_split, mode='train', **data_kwargs)
+        testset = get_dataset(args.dataset, split='val', mode ='val', **data_kwargs)
         # dataloader
         kwargs = {'num_workers': args.workers, 'pin_memory': True} \
             if args.cuda else {}

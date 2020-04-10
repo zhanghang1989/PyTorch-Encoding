@@ -12,7 +12,7 @@ from torch.nn.functional import interpolate
 
 from .base import BaseNet
 from .fcn import FCNHead
-from ..nn import PyramidPooling
+from ...nn import PyramidPooling
 
 class PSP(BaseNet):
     def __init__(self, nclass, backbone, aux=True, se_loss=False, norm_layer=nn.BatchNorm2d, **kwargs):
@@ -50,10 +50,10 @@ class PSPHead(nn.Module):
     def forward(self, x):
         return self.conv5(x)
 
-def get_psp(dataset='pascal_voc', backbone='resnet50', pretrained=False,
+def get_psp(dataset='pascal_voc', backbone='resnet50s', pretrained=False,
             root='~/.encoding/models', **kwargs):
     # infer number of classes
-    from ..datasets import datasets, acronyms
+    from ...datasets import datasets, acronyms
     model = PSP(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, root=root, **kwargs)
     if pretrained:
         from .model_store import get_model_file
@@ -78,4 +78,4 @@ def get_psp_resnet50_ade(pretrained=False, root='~/.encoding/models', **kwargs):
     >>> model = get_psp_resnet50_ade(pretrained=True)
     >>> print(model)
     """
-    return get_psp('ade20k', 'resnet50', pretrained, root=root, **kwargs)
+    return get_psp('ade20k', 'resnet50s', pretrained, root=root, **kwargs)

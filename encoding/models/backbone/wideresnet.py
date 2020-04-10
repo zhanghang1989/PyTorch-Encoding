@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..nn import SyncBatchNorm, GlobalAvgPool2d
-from ..models.model_store import get_model_file
+from ...nn import SyncBatchNorm, GlobalAvgPool2d
+from ..model_store import get_model_file
 
 __all__ = ['WideResNet', 'wideresnet38', 'wideresnet50']
 
@@ -195,7 +195,7 @@ class WideResNet(nn.Module):
         return x
 
 def wideresnet38(pretrained=False, root='~/.encoding/models', **kwargs):
-    """Constructs a ResNet-50 model.
+    """Constructs a WideResNet-38 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -208,7 +208,7 @@ def wideresnet38(pretrained=False, root='~/.encoding/models', **kwargs):
 
 
 def wideresnet50(pretrained=False, root='~/.encoding/models', **kwargs):
-    """Constructs a ResNet-50 model.
+    """Constructs a WideResNet-50 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet

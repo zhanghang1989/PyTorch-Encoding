@@ -56,6 +56,7 @@ class dist_syncbatchnorm_(Function):
         _var = _exs - _ex ** 2
         running_mean.mul_((1 - ctx.momentum)).add_(ctx.momentum * _ex)
         running_var.mul_((1 - ctx.momentum)).add_(ctx.momentum * _var)
+
         # Mark in-place modified tensors
         ctx.mark_dirty(running_mean, running_var)
 

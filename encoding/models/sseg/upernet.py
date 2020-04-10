@@ -12,7 +12,7 @@ from torch.nn.functional import upsample
 
 from .base import BaseNet
 from .fcfpn import FCFPNHead
-from ..nn import PyramidPooling
+from ...nn import PyramidPooling
 
 torch_ver = torch.__version__[:3]
 
@@ -26,8 +26,8 @@ class UperNet(BaseNet):
     nclass : int
         Number of categories for the training dataset.
     backbone : string
-        Pre-trained dilated backbone network type (default:'resnet50'; 'resnet50',
-        'resnet101' or 'resnet152').
+        Pre-trained dilated backbone network type (default:'resnet50s'; 'resnet50s',
+        'resnet101s' or 'resnet152s').
     norm_layer : object
         Normalization layer used in backbone network (default: :class:`mxnet.gluon.nn.BatchNorm`;
 
@@ -39,7 +39,7 @@ class UperNet(BaseNet):
 
     Examples
     --------
-    >>> model = UperNet(nclass=21, backbone='resnet50')
+    >>> model = UperNet(nclass=21, backbone='resnet50s')
     >>> print(model)
     """
     def __init__(self, nclass, backbone, aux=True, se_loss=False, norm_layer=nn.BatchNorm2d, **kwargs):
@@ -65,7 +65,7 @@ class UperNetHead(FCFPNHead):
         self.extramodule = PyramidPooling(fpn_inchannels[-1] // 2, norm_layer, up_kwargs)
 
 
-def get_upernet(dataset='pascal_voc', backbone='resnet50', pretrained=False,
+def get_upernet(dataset='pascal_voc', backbone='resnet50s', pretrained=False,
             root='~/.encoding/models', **kwargs):
     r"""UperNet model from the paper `"Fully Convolutional Network for semantic segmentation"
     <https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_upernet.pdf>`_
@@ -79,7 +79,7 @@ def get_upernet(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         Location for keeping the model parameters.
     Examples
     --------
-    >>> model = get_upernet(dataset='pascal_voc', backbone='resnet50', pretrained=False)
+    >>> model = get_upernet(dataset='pascal_voc', backbone='resnet50s', pretrained=False)
     >>> print(model)
     """
     acronyms = {
@@ -88,7 +88,7 @@ def get_upernet(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         'ade20k': 'ade',
     }
     # infer number of classes
-    from ..datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
+    from ...datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
     model = UperNet(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, **kwargs)
     if pretrained:
         from .model_store import get_model_file
@@ -114,4 +114,4 @@ def get_upernet_50_ade(pretrained=False, root='~/.encoding/models', **kwargs):
     >>> model = get_upernet_50_ade(pretrained=True)
     >>> print(model)
     """
-    return get_upernet('ade20k', 'resnet50', pretrained)
+    return get_upernet('ade20k', 'resnet50s', pretrained)

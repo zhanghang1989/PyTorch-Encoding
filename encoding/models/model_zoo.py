@@ -1,18 +1,10 @@
 # pylint: disable=wildcard-import, unused-wildcard-import
 
-from .resnet import *
-from .resnext import *
-from .resnest import *
-from .resnet_variants import *
-from .wideresnet import *
-from .fcn import *
-from .psp import *
-from .encnet import *
+from .backbone import *
+from .sseg import *
 from .deepten import *
-from .xception import *
 
 __all__ = ['get_model']
-
 
 def get_model(name, **kwargs):
     """Returns a pre-defined model by name
@@ -42,6 +34,9 @@ def get_model(name, **kwargs):
         'resnest200': resnest200,
         'resnest269': resnest269,
         # resnet other variants
+        'resnet50s': resnet50s,
+        'resnet101s': resnet101s,
+        'resnet152s': resnet152s,
         'resnet50d': resnet50d,
         'resnext50_32x4d': resnext50_32x4d,
         'resnext101_32x8d': resnext101_32x8d,

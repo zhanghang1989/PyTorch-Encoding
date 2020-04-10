@@ -64,9 +64,9 @@ static inline void pool2d_shape_check(
 
   TORCH_CHECK(input.numel() > 0 && (ndim == 3 || ndim == 4),
               "non-empty 3D or 4D input tensor expected but got ndim: ", ndim);
-  TORCH_CHECK(kW/2 >= padW && kH/2 >= padH,
-              "pad should be smaller than half of kernel size, but got ",
-              "padW = ", padW, ", padH = ", padH, ", kW = ", kW, ", kH = ", kH);
+  //TORCH_CHECK(kW/2 >= padW && kH/2 >= padH,
+  //            "pad should be smaller than half of kernel size, but got ",
+  //            "padW = ", padW, ", padH = ", padH, ", kW = ", kW, ", kH = ", kH);
 
   TORCH_CHECK(outputWidth >= 1 && outputHeight >= 1,
               "Given input size: (",
@@ -114,7 +114,8 @@ static void conv_rectify_cpu_frame(
           int64_t wstart = xx * dW - padW;
           int64_t hend = std::min(hstart + kH, inputHeight + padH);
           int64_t wend = std::min(wstart + kW, inputWidth + padW);
-          int pool_size = (hend - hstart) * (wend - wstart);
+          //int pool_size = (hend - hstart) * (wend - wstart);
+          int pool_size = ((kH - 1) / dilation_h + 1) * ((kW - 1) / dilation_w + 1);
           hstart = std::max(hstart, (int64_t) 0);
           wstart = std::max(wstart, (int64_t) 0);
           hend = std::min(hend, inputHeight);
@@ -177,8 +178,10 @@ void conv_rectify_cpu_tempalte(
   const int64_t inputHeight = input_.size(-2);
   const int64_t inputWidth = input_.size(-1);
 
-  const int64_t outputHeight = pooling_output_shape<int64_t>(inputHeight, kH, padH, dH, 1, false);
-  const int64_t outputWidth = pooling_output_shape<int64_t>(inputWidth, kW, padW, dW, 1, false);
+  //const int64_t outputHeight = pooling_output_shape<int64_t>(inputHeight, kH, padH, dH, dilationH, false);
+  //const int64_t outputWidth = pooling_output_shape<int64_t>(inputWidth, kW, padW, dW, dilationW, false);
+  const int64_t outputHeight = output.size(-2);
+  const int64_t outputWidth = output.size(-1);
 
   pool2d_shape_check(
     input_,

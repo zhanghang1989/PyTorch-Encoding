@@ -1,6 +1,8 @@
 """ResNet variants"""
 
+import torch
 from .resnet import ResNet, Bottleneck
+from ..model_store import get_model_file
 
 __all__ = ['resnet50s', 'resnet101s', 'resnet152s',
            'resnet50d']

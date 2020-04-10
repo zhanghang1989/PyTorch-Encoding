@@ -17,6 +17,7 @@ import torch
 from torch.utils import data
 import torch.distributed as dist
 import torch.multiprocessing as mp
+import torch.backends.cudnn as cudnn
 import torchvision.transforms as transform
 from torch.nn.parallel.scatter_gather import gather
 from torch.nn.parallel import DistributedDataParallel
@@ -167,6 +168,7 @@ def main_worker(gpu, ngpus_per_node, args):
     torch.cuda.set_device(args.gpu)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
+    cudnn.benchmark = True
     # data transforms
     input_transform = transform.Compose([
         transform.ToTensor(),
@@ -179,9 +181,9 @@ def main_worker(gpu, ngpus_per_node, args):
     train_sampler = torch.utils.data.distributed.DistributedSampler(trainset)
     val_sampler = torch.utils.data.distributed.DistributedSampler(valset, shuffle=False)
     # dataloader
-    kwargs = {'batch_size': args.batch_size, 'num_workers': args.workers, 'pin_memory': True}
-    trainloader = data.DataLoader(trainset, sampler=train_sampler, drop_last=True, **kwargs)
-    valloader = data.DataLoader(valset, sampler=val_sampler, **kwargs)
+    loader_kwargs = {'batch_size': args.batch_size, 'num_workers': args.workers, 'pin_memory': True}
+    trainloader = data.DataLoader(trainset, sampler=train_sampler, drop_last=True, **loader_kwargs)
+    valloader = data.DataLoader(valset, sampler=val_sampler, **loader_kwargs)
     nclass = trainset.num_class
     # model
     model_kwargs = {}
@@ -251,8 +253,8 @@ def main_worker(gpu, ngpus_per_node, args):
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
-            if i % 50 == 0 and args.gpu == 0:
-                iter_per_sec = 50.0 / (time.time() - tic) if i != 0 else 1.0/ (time.time() - tic)
+            if i % 100 == 0 and args.gpu == 0:
+                iter_per_sec = 100.0 / (time.time() - tic) if i != 0 else 1.0/ (time.time() - tic)
                 tic = time.time()
                 print('Epoch: {}, Iter: {}, Speed: {:.3f} iter/sec, Train loss: {:.3f}'. \
                       format(epoch, i, iter_per_sec, train_loss / (i + 1)))
@@ -272,27 +274,28 @@ def main_worker(gpu, ngpus_per_node, args):
                 metric.update(target, pred)
 
             pixAcc, mIoU = metric.get()
-            if i % 50 == 0 and args.gpu == 0:
+            if i % 100 == 0 and args.gpu == 0:
                 print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
-        pixAcc, mIoU = mpi_avg_all(pixAcc, mIoU)
-        print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
 
-        new_pred = (pixAcc + mIoU)/2
-        if new_pred > best_pred:
-            is_best = True
-            best_pred = new_pred
-        utils.save_checkpoint({
-            'epoch': epoch + 1,
-            'state_dict': model.module.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'best_pred': best_pred,
-        }, args, is_best)
+        if args.gpu == 0:
+            pixAcc, mIoU = mpi_avg_all(pixAcc, mIoU)
+            print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
+
+            new_pred = (pixAcc + mIoU)/2
+            if new_pred > best_pred:
+                is_best = True
+                best_pred = new_pred
+            utils.save_checkpoint({
+                'epoch': epoch + 1,
+                'state_dict': model.module.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'best_pred': best_pred,
+            }, args, is_best)
 
     if args.gpu == 0:
         print('Starting Epoch:', args.start_epoch)
         print('Total Epoches:', args.epochs)
 
-    validation(0)
     for epoch in range(args.start_epoch, args.epochs):
         tic = time.time()
         training(epoch)

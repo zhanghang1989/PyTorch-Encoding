@@ -18,6 +18,8 @@ class _rectify(Function):
     @staticmethod
     def forward(ctx, y, x, kernel_size, stride, padding, dilation, average):
         ctx.save_for_backward(x)
+        # assuming kernel_size is 3
+        kernel_size = [k + 2 * (d - 1) for k,d in zip(kernel_size, dilation)]
         ctx.kernel_size = kernel_size
         ctx.stride = stride
         ctx.padding = padding

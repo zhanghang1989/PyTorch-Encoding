@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn.functional import interpolate
-from ..nn import ConcurrentModule, SyncBatchNorm
+from ...nn import ConcurrentModule, SyncBatchNorm
 
 from .base import BaseNet
 
@@ -23,8 +23,8 @@ class FCN(BaseNet):
     nclass : int
         Number of categories for the training dataset.
     backbone : string
-        Pre-trained dilated backbone network type (default:'resnet50'; 'resnet50',
-        'resnet101' or 'resnet152').
+        Pre-trained dilated backbone network type (default:'resnet50s'; 'resnet50s',
+        'resnet101s' or 'resnet152s').
     norm_layer : object
         Normalization layer used in backbone network (default: :class:`mxnet.gluon.nn.BatchNorm`;
 
@@ -36,7 +36,7 @@ class FCN(BaseNet):
 
     Examples
     --------
-    >>> model = FCN(nclass=21, backbone='resnet50')
+    >>> model = FCN(nclass=21, backbone='resnet50s')
     >>> print(model)
     """
     def __init__(self, nclass, backbone, aux=True, se_loss=False, with_global=False,
@@ -110,7 +110,7 @@ class FCNHead(nn.Module):
         return self.conv5(x)
 
 
-def get_fcn(dataset='pascal_voc', backbone='resnet50', pretrained=False,
+def get_fcn(dataset='pascal_voc', backbone='resnet50s', pretrained=False,
             root='~/.encoding/models', **kwargs):
     r"""FCN model from the paper `"Fully Convolutional Network for semantic segmentation"
     <https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf>`_
@@ -124,11 +124,11 @@ def get_fcn(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         Location for keeping the model parameters.
     Examples
     --------
-    >>> model = get_fcn(dataset='pascal_voc', backbone='resnet50', pretrained=False)
+    >>> model = get_fcn(dataset='pascal_voc', backbone='resnet50s', pretrained=False)
     >>> print(model)
     """
     # infer number of classes
-    from ..datasets import datasets, acronyms
+    from ...datasets import datasets, acronyms
     model = FCN(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, root=root, **kwargs)
     if pretrained:
         from .model_store import get_model_file
@@ -153,7 +153,7 @@ def get_fcn_resnet50_pcontext(pretrained=False, root='~/.encoding/models', **kwa
     >>> model = get_fcn_resnet50_pcontext(pretrained=True)
     >>> print(model)
     """
-    return get_fcn('pcontext', 'resnet50', pretrained, root=root, aux=False, **kwargs)
+    return get_fcn('pcontext', 'resnet50s', pretrained, root=root, aux=False, **kwargs)
 
 def get_fcn_resnet50_ade(pretrained=False, root='~/.encoding/models', **kwargs):
     r"""EncNet-PSP model from the paper `"Context Encoding for Semantic Segmentation"
@@ -172,4 +172,4 @@ def get_fcn_resnet50_ade(pretrained=False, root='~/.encoding/models', **kwargs):
     >>> model = get_fcn_resnet50_ade(pretrained=True)
     >>> print(model)
     """
-    return get_fcn('ade20k', 'resnet50', pretrained, root=root, **kwargs)
+    return get_fcn('ade20k', 'resnet50s', pretrained, root=root, **kwargs)

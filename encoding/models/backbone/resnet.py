@@ -10,7 +10,8 @@ import math
 import torch
 import torch.nn as nn
 
-from ..nn import SplAtConv2d, DropBlock2D, GlobalAvgPool2d, RFConv2d
+from ...nn import SplAtConv2d, DropBlock2D, GlobalAvgPool2d, RFConv2d
+from ..model_store import get_model_file
 
 __all__ = ['ResNet', 'Bottleneck',
            'resnet50', 'resnet101', 'resnet152']
@@ -140,7 +141,7 @@ class ResNet(nn.Module):
     """
     # pylint: disable=unused-variable
     def __init__(self, block, layers, radix=1, groups=1, bottleneck_width=64,
-                 num_classes=1000, dilated=False,
+                 num_classes=1000, dilated=False, dilation=1,
                  deep_stem=False, stem_width=64, avg_down=False,
                  rectified_conv=False, rectify_avg=False,
                  avd=False, avd_first=False,
@@ -183,12 +184,19 @@ class ResNet(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer)
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
-        if dilated:
+        if dilated or dilation == 4:
             self.layer3 = self._make_layer(block, 256, layers[2], stride=1,
                                            dilation=2, norm_layer=norm_layer,
                                            dropblock_prob=dropblock_prob)
             self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
                                            dilation=4, norm_layer=norm_layer,
+                                           dropblock_prob=dropblock_prob)
+        elif dilation==2:
+            self.layer3 = self._make_layer(block, 256, layers[2], stride=2,
+                                           dilation=1, norm_layer=norm_layer,
+                                           dropblock_prob=dropblock_prob)
+            self.layer4 = self._make_layer(block, 512, layers[3], stride=1,
+                                           dilation=2, norm_layer=norm_layer,
                                            dropblock_prob=dropblock_prob)
         else:
             self.layer3 = self._make_layer(block, 256, layers[2], stride=2,

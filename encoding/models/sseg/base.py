@@ -14,36 +14,15 @@ from torch.nn.parallel.data_parallel import DataParallel
 from torch.nn.parallel.parallel_apply import parallel_apply
 from torch.nn.parallel.scatter_gather import scatter
 
-from ..utils import batch_pix_accuracy, batch_intersection_union
+from ...utils import batch_pix_accuracy, batch_intersection_union
 
-from .resnet import *
-from .resnext import *
-from .resnest import *
-from .resnet_variants import *
-from .wideresnet import *
-from .xception import *
+from ..backbone import *
 
 up_kwargs = {'mode': 'bilinear', 'align_corners': True}
 
 __all__ = ['BaseNet', 'MultiEvalModule']
 
 def get_backbone(name, **kwargs):
-    """Returns a pre-defined model by name
-
-    Parameters
-    ----------
-    name : str
-        Name of the model.
-    pretrained : bool
-        Whether to load the pretrained weights for model.
-    root : str, default '~/.encoding/models'
-        Location for keeping the model parameters.
-
-    Returns
-    -------
-    Module:
-        The model.
-    """
     models = {
         # resnet
         'resnet50': resnet50,
@@ -55,6 +34,9 @@ def get_backbone(name, **kwargs):
         'resnest200': resnest200,
         'resnest269': resnest269,
         # resnet other variants
+        'resnet50s': resnet50s,
+        'resnet101s': resnet101s,
+        'resnet152s': resnet152s,
         'resnet50d': resnet50d,
         'resnext50_32x4d': resnext50_32x4d,
         'resnext101_32x8d': resnext101_32x8d,

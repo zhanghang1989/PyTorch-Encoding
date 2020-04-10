@@ -104,7 +104,7 @@ class DropBlock2D(nn.Module):
             state_dict[idx_key] =  torch.zeros(1, dtype=torch.int64)
         if idx_key not in drop_prob_key:
             state_dict[drop_prob_key] =  torch.ones(1, dtype=torch.float32)
-        super(_NormBase, self)._load_from_state_dict(
+        super(DropBlock2D, self)._load_from_state_dict(
             state_dict, prefix, local_metadata, strict,
             missing_keys, unexpected_keys, error_msgs)
 

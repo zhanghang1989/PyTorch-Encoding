@@ -38,19 +38,23 @@ Test Pre-trained Model
 .. role:: raw-html(raw)
    :format: html
 
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| Model                            | pixAcc    | mIoU      | Command                                                                                      |
-+==================================+===========+===========+==============================================================================================+
-| Encnet_ResNet50_PContext         | 79.2%     | 51.0%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc50_pcont')" class="toggleblock">cmd</a>`  |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet101_PContext        | 80.7%     | 54.1%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_pcont')" class="toggleblock">cmd</a>` |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet50_ADE              | 80.1%     | 41.5%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc50_ade')" class="toggleblock">cmd</a>`    |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet101_ADE             | 81.3%     | 44.4%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_ade')" class="toggleblock">cmd</a>`   |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
-| EncNet_ResNet101_VOC             | N/A       | 85.9%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_voc')" class="toggleblock">cmd</a>`   |
-+----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------+
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| Model                            | pixAcc    | mIoU      | Command                                                                                            |
++==================================+===========+===========+====================================================================================================+
+| Encnet_ResNet50_PContext         | 79.2%     | 51.0%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc50_pcont')" class="toggleblock">cmd</a>`        |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| EncNet_ResNet101_PContext        | 80.7%     | 54.1%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_pcont')" class="toggleblock">cmd</a>`       |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| FCN_ResNet50_ADE                 | xx.x%     | xx.x%     | :raw-html:`<a href="javascript:toggleblock('cmd_fcn50_ade')" class="toggleblock">cmd</a>`          |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| FCN_ResNeSt50_ADE                | xx.x%     | xx.x%     | :raw-html:`<a href="javascript:toggleblock('cmd_fcn_nest50_ade')" class="toggleblock">cmd</a>`     |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| EncNet_ResNet50_ADE              | 80.1%     | 41.5%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc50_ade')" class="toggleblock">cmd</a>`          |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| EncNet_ResNet101_ADE             | 81.3%     | 44.4%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_ade')" class="toggleblock">cmd</a>`         |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
+| EncNet_ResNet101_VOC             | N/A       | 85.9%     | :raw-html:`<a href="javascript:toggleblock('cmd_enc101_voc')" class="toggleblock">cmd</a>`         |
++----------------------------------+-----------+-----------+----------------------------------------------------------------------------------------------------+
 
 
 .. raw:: html
@@ -71,10 +75,17 @@ Test Pre-trained Model
     CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model PSP --aux
     </code>
 
+    <code xml:space="preserve" id="cmd_fcn50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ade20k --model fcn --backbone resnet50 --aux --batch-size 2
+    </code>
+
+    <code xml:space="preserve" id="cmd_fcn_nest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ade20k --model fcn --backbone resnest50 --aux --batch-size 2
+    </code>
+
     <code xml:space="preserve" id="cmd_enc50_ade" style="display: none; text-align: left; white-space: pre-wrap">
     CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model EncNet --aux --se-loss
     </code>
-
 
     <code xml:space="preserve" id="cmd_enc101_ade" style="display: none; text-align: left; white-space: pre-wrap">
     CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model EncNet --aux --se-loss --backbone resnet101 --base-size 640 --crop-size 576
@@ -125,13 +136,13 @@ Quick Demo
 Train Your Own Model
 --------------------
 
-- Prepare the datasets by runing the scripts in the ``scripts/`` folder, for example preparing ``PASCAL Context`` dataset::
+- Prepare the datasets by runing the scripts in the ``scripts/`` folder, for example preparing ``ADE20K`` dataset::
 
-    python scripts/prepare_pcontext.py
+    python scripts/prepare_ade20k.py
 
 - The training script is in the ``experiments/segmentation/`` folder, example training command::
 
-    CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset pcontext --model encnet --aux --se-loss
+    python train_dist.py --dataset ade20k --model encnet --aux --se-loss
 
 - Detail training options, please run ``python train.py -h``. Commands for reproducing pre-trained models can be found in the table.
 
@@ -140,7 +151,7 @@ Train Your Own Model
     training correctness purpose. For evaluating the pretrained model on validation set using MS,
     please use the command::
 
-        CUDA_VISIBLE_DEVICES=0,1,2,3 python test.py --dataset pcontext --model encnet --aux --se-loss --resume mycheckpoint --eval
+        python test.py --dataset pcontext --model encnet --aux --se-loss --resume mycheckpoint --eval
 
 Citation
 --------

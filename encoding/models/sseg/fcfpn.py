@@ -128,7 +128,7 @@ def get_fcfpn(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         Location for keeping the model parameters.
     Examples
     --------
-    >>> model = get_fcfpn(dataset='pascal_voc', backbone='resnet50', pretrained=False)
+    >>> model = get_fcfpn(dataset='pascal_voc', backbone='resnet50s', pretrained=False)
     >>> print(model)
     """
     acronyms = {
@@ -137,7 +137,7 @@ def get_fcfpn(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         'ade20k': 'ade',
     }
     # infer number of classes
-    from ..datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
+    from ...datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
     model = FCFPN(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, **kwargs)
     if pretrained:
         from .model_store import get_model_file
@@ -163,5 +163,5 @@ def get_fcfpn_50_ade(pretrained=False, root='~/.encoding/models', **kwargs):
     >>> model = get_fcfpn_50_ade(pretrained=True)
     >>> print(model)
     """
-    return get_fcfpn('ade20k', 'resnet50', pretrained)
+    return get_fcfpn('ade20k', 'resnet50s', pretrained)
 

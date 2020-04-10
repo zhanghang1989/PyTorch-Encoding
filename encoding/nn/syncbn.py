@@ -26,7 +26,7 @@ __all__ = ['DistSyncBatchNorm', 'SyncBatchNorm', 'BatchNorm1d', 'BatchNorm2d', '
 
 class DistSyncBatchNorm(_BatchNorm):
     def __init__(self, num_features, eps=1e-5, momentum=0.1, process_group=None):
-        super(DistSyncBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=True)
+        super(DistSyncBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=True, track_running_stats=True)
         self.process_group = process_group
 
     def forward(self, x):
@@ -45,6 +45,10 @@ class DistSyncBatchNorm(_BatchNorm):
         #def forward(ctx, x, gamma, beta, running_mean, running_var, eps, momentum, training, process_group):
         y = dist_syncbatchnorm(x, self.weight, self.bias, self.running_mean, self.running_var,
                                self.eps, self.momentum, self.training, process_group)
+
+        #_var = _exs - _ex ** 2
+        #running_mean.mul_((1 - ctx.momentum)).add_(ctx.momentum * _ex)
+        #running_var.mul_((1 - ctx.momentum)).add_(ctx.momentum * _var)
         return y.view(input_shape)
 
 

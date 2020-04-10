@@ -104,7 +104,7 @@ class ASPP_Module(nn.Module):
         y = torch.cat((feat0, feat1, feat2, feat3, feat4), 1)
         return self.project(y)
 
-def get_deeplab(dataset='pascal_voc', backbone='resnet50', pretrained=False,
+def get_deeplab(dataset='pascal_voc', backbone='resnet50s', pretrained=False,
             root='~/.encoding/models', **kwargs):
     acronyms = {
         'pascal_voc': 'voc',
@@ -112,7 +112,7 @@ def get_deeplab(dataset='pascal_voc', backbone='resnet50', pretrained=False,
         'ade20k': 'ade',
     }
     # infer number of classes
-    from ..datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
+    from ...datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
     model = DeepLabV3(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, root=root, **kwargs)
     if pretrained:
         from .model_store import get_model_file
@@ -137,4 +137,23 @@ def get_deeplab_resnet50_ade(pretrained=False, root='~/.encoding/models', **kwar
     >>> model = get_deeplab_resnet50_ade(pretrained=True)
     >>> print(model)
     """
-    return get_deeplab('ade20k', 'resnet50', pretrained, root=root, **kwargs)
+    return get_deeplab('ade20k', 'resnet50s', pretrained, root=root, **kwargs)
+
+def get_deeplab_resnet101_ade(pretrained=False, root='~/.encoding/models', **kwargs):
+    r"""DeepLabV3 model from the paper `"Context Encoding for Semantic Segmentation"
+    <https://arxiv.org/pdf/1803.08904.pdf>`_
+
+    Parameters
+    ----------
+    pretrained : bool, default False
+        Whether to load the pretrained weights for model.
+    root : str, default '~/.encoding/models'
+        Location for keeping the model parameters.
+
+
+    Examples
+    --------
+    >>> model = get_deeplab_resnet50_ade(pretrained=True)
+    >>> print(model)
+    """
+    return get_deeplab('ade20k', 'resnet101s', pretrained, root=root, **kwargs)

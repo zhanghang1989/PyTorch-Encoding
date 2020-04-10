@@ -1,6 +1,7 @@
 """ResNeXt models"""
 
 from .resnet import ResNet, Bottleneck
+from ..model_store import get_model_file
 
 __all__ = ['resnext50_32x4d', 'resnext101_32x8d']
 

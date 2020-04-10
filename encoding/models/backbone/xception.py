@@ -3,7 +3,8 @@ import math
 from collections import OrderedDict
 import torch.nn as nn
 import torch.nn.functional as F
-from ..nn import SyncBatchNorm, GlobalAvgPool2d
+from ...nn import SyncBatchNorm, GlobalAvgPool2d
+from ..model_store import get_model_file
 
 __all__ = ['Xception65', 'Xception71', 'xception65']
 
