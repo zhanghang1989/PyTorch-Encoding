@@ -50,7 +50,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx_gallery.gen_gallery',
+    #'sphinx_gallery.gen_gallery',
     # 'sphinxcontrib.googleanalytics',
 ]
 
@@ -193,11 +193,8 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-def setup(app):
-    # Custom CSS
-    # app.add_stylesheet('css/pytorch_theme.css')
-    # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
-    # Custom directives
-    app.add_directive('includenodoc', IncludeDirective)
-    app.add_directive('galleryitem', GalleryItemDirective)
-    app.add_directive('customgalleryitem', CustomGalleryItemDirective)
+#def setup(app):
+#    # Custom directives
+#    app.add_directive('includenodoc', IncludeDirective)
+#    app.add_directive('galleryitem', GalleryItemDirective)
+#    app.add_directive('customgalleryitem', CustomGalleryItemDirective)
