@@ -161,6 +161,11 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+    'preamble': r'''
+\newcolumntype{\Yl}[1]{>{\raggedright\arraybackslash}\Y{#1}}
+\newcolumntype{\Yr}[1]{>{\raggedleft\arraybackslash}\Y{#1}}
+\newcolumntype{\Yc}[1]{>{\centering\arraybackslash}\Y{#1}}
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
