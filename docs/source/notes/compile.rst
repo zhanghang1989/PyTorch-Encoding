@@ -9,7 +9,7 @@ Installation
  
     * PIP Install::
 
-        pip install torch-encoding
+        pip install torch-encoding --pre
 
     * Install from source:: 
 
@@ -24,9 +24,7 @@ This tutorial is a sucessful setup example for AWS EC2 p3 instance with ubuntu 1
 We cannot guarantee it to work for all the machines, but the steps should be similar.
 Assuming CUDA and cudnn are already sucessfully installed, otherwise please refer to other tutorials.
 
-      * Install Anaconda from the `link <https://www.anaconda.com/distribution/>`_, and install python 3.6.5::
-
-         conda install python==3.6.5
+      * Install Anaconda from the `link <https://www.anaconda.com/distribution/>`_ .
 
       * Install ninja::
  
@@ -36,12 +34,11 @@ Assuming CUDA and cudnn are already sucessfully installed, otherwise please refe
 
       * Install PyTorch::
 
-         conda install -c pytorch magma-cuda100
          conda install pytorch torchvision cudatoolkit=100 -c pytorch
 
       * Install this package::
 
-         pip install torch-encoding
+         pip install torch-encoding --pre
 
 Citations
 ---------

@@ -20,8 +20,14 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 import encoding
-import sphinx_rtd_theme
+import autorch_sphinx_theme
+import glob
+import shutil
+from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective
 
 
 # -- General configuration ------------------------------------------------
@@ -33,6 +39,7 @@ import sphinx_rtd_theme
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -43,6 +50,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    #'sphinx_gallery.gen_gallery',
     # 'sphinxcontrib.googleanalytics',
 ]
 
@@ -88,7 +96,8 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns += ['*/index.rst']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -102,8 +111,8 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'autorch_sphinx_theme'
+html_theme_path = [autorch_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -124,12 +133,9 @@ html_static_path = ['_static']
 
 html_context = {
     'css_files': [
-        'https://fonts.googleapis.com/css?family=Lato',
-        '_static/css/encoding.css'
-    ],
-}
-#'_static/css/hangzh.css'
-
+        '_static/theme_overrides.css',  # override wide tables in RTD theme
+        ],
+     }
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -155,6 +161,11 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+    'preamble': r'''
+\newcolumntype{\Yl}[1]{>{\raggedright\arraybackslash}\Y{#1}}
+\newcolumntype{\Yr}[1]{>{\raggedleft\arraybackslash}\Y{#1}}
+\newcolumntype{\Yc}[1]{>{\centering\arraybackslash}\Y{#1}}
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -187,61 +198,8 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-}
-
-# -- A patch that prevents Sphinx from cross-referencing ivar tags -------
-# See http://stackoverflow.com/a/41184353/3343043
-
-from docutils import nodes
-from sphinx.util.docfields import TypedField
-from sphinx import addnodes
-
-
-def patched_make_field(self, types, domain, items, **kw):
-    # `kw` catches `env=None` needed for newer sphinx while maintaining
-    #  backwards compatibility when passed along further down!
-
-    # type: (List, unicode, Tuple) -> nodes.field
-    def handle_item(fieldarg, content):
-        par = nodes.paragraph()
-        par += addnodes.literal_strong('', fieldarg)  # Patch: this line added
-        # par.extend(self.make_xrefs(self.rolename, domain, fieldarg,
-        #                           addnodes.literal_strong))
-        if fieldarg in types:
-            par += nodes.Text(' (')
-            # NOTE: using .pop() here to prevent a single type node to be
-            # inserted twice into the doctree, which leads to
-            # inconsistencies later when references are resolved
-            fieldtype = types.pop(fieldarg)
-            if len(fieldtype) == 1 and isinstance(fieldtype[0], nodes.Text):
-                typename = u''.join(n.astext() for n in fieldtype)
-                typename = typename.replace('int', 'python:int')
-                typename = typename.replace('long', 'python:long')
-                typename = typename.replace('float', 'python:float')
-                typename = typename.replace('type', 'python:type')
-                par.extend(self.make_xrefs(self.typerolename, domain, typename,
-                                           addnodes.literal_emphasis, **kw))
-            else:
-                par += fieldtype
-            par += nodes.Text(')')
-        par += nodes.Text(' -- ')
-        par += content
-        return par
-
-    fieldname = nodes.field_name('', self.label)
-    if len(items) == 1 and self.can_collapse:
-        fieldarg, content = items[0]
-        bodynode = handle_item(fieldarg, content)
-    else:
-        bodynode = self.list_type()
-        for fieldarg, content in items:
-            bodynode += nodes.list_item('', handle_item(fieldarg, content))
-    fieldbody = nodes.field_body('', bodynode)
-    return nodes.field('', fieldname, fieldbody)
-
-TypedField.make_field = patched_make_field
+#def setup(app):
+#    # Custom directives
+#    app.add_directive('includenodoc', IncludeDirective)
+#    app.add_directive('galleryitem', GalleryItemDirective)
+#    app.add_directive('customgalleryitem', CustomGalleryItemDirective)
