@@ -13,6 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Set PR Number
+        uses: actions/github-script@0.3.0
+        with:
+          github-token: ${{github.token}}
+          script: |
+            const core = require('@actions/core')
+            const prNumber = context.payload.number;
+            core.exportVariable('PULL_NUMBER', prNumber);
         
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -39,31 +48,7 @@ jobs:
           cd docs/
           make html
           touch build/html/.nojekyll
-          
-      - name: Set PR Number
-        uses: actions/github-script@0.3.0
-        with:
-          github-token: ${{github.token}}
-          script: |
-            const core = require('@actions/core')
-            const prNumber = context.payload.number;
-            core.exportVariable('PULL_NUMBER', prNumber);
-        
-        
-      # https://github.com/marketplace/actions/github-pages
-      - name: Deploy
-        if: success()
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --acl public-read --follow-symlinks --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          DEST_DIR: "${{ secrets.DEST_DIR }}/${PULL_NUMBER}"
-          SOURCE_DIR: 'docs/build/html/'
-          
+          aws s3 sync build/html/ s3://${{ secrets.AWS_S3_BUCKET }}/${{ secrets.DEST_DIR }}/docs/${{ env.PULL_NUMBER }}/ --acl public-read --follow-symlinks --delete
           
       - name: Comment
         if: success()
