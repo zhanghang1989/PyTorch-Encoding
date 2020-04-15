@@ -41,10 +41,6 @@ DeepLabV3_ResNeSt101_ADE                                                        
 
 .. raw:: html
 
-    <code xml:space="preserve" id="cmd_fcn50_ade" style="display: none; text-align: left; white-space: pre-wrap">
-    python train_dist.py --dataset ade20k --model fcn --backbone resnet50 --aux --batch-size 2
-    </code>
-
     <code xml:space="preserve" id="cmd_fcn_nest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
     python train_dist.py --dataset ade20k --model fcn --backbone resnest50 --aux --batch-size 2
     </code>
@@ -53,7 +49,7 @@ DeepLabV3_ResNeSt101_ADE                                                        
     python train_dist.py --dataset ADE20K --model deeplab --backbone resnest50
     </code>
 
-    <code xml:space="preserve" id="cmd_deeplab_resnest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    <code xml:space="preserve" id="cmd_deeplab_resnest101_ade" style="display: none; text-align: left; white-space: pre-wrap">
     python train_dist.py --dataset ADE20K --model deeplab --backbone resnest101
     </code>
 
@@ -75,6 +71,10 @@ EncNet_ResNet101_VOC                                                            
 
 
 .. raw:: html
+
+    <code xml:space="preserve" id="cmd_fcn50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ade20k --model fcn --backbone resnet50 --aux --batch-size 2
+    </code>
 
     <code xml:space="preserve" id="cmd_fcn50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
     CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset PContext --model FCN
