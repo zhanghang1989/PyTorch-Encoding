@@ -1,5 +1,5 @@
-ImageNet Models
-===============
+Image Classification
+====================
 
 Install Package
 ---------------
