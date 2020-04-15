@@ -14,6 +14,28 @@ from .base import BaseNet
 from .fcn import FCNHead
 
 class DeepLabV3(BaseNet):
+    r"""DeepLabV3
+
+    Parameters
+    ----------
+    nclass : int
+        Number of categories for the training dataset.
+    backbone : string
+        Pre-trained dilated backbone network type (default:'resnet50'; 'resnet50',
+        'resnet101' or 'resnet152').
+    norm_layer : object
+        Normalization layer used in backbone network (default: :class:`mxnet.gluon.nn.BatchNorm`;
+        for Synchronized Cross-GPU BachNormalization).
+    aux : bool
+        Auxiliary loss.
+
+
+    Reference:
+
+        Chen, Liang-Chieh, et al. "Rethinking atrous convolution for semantic image segmentation."
+        arXiv preprint arXiv:1706.05587 (2017).
+
+    """
     def __init__(self, nclass, backbone, aux=True, se_loss=False, norm_layer=nn.BatchNorm2d, **kwargs):
         super(DeepLabV3, self).__init__(nclass, backbone, aux, se_loss, norm_layer=norm_layer, **kwargs)
         self.head = DeepLabV3Head(2048, nclass, norm_layer, self._up_kwargs)
@@ -22,7 +44,7 @@ class DeepLabV3(BaseNet):
 
     def forward(self, x):
         _, _, h, w = x.size()
-        _, _, c3, c4 = self.base_forward(x)
+        c1, c2, c3, c4 = self.base_forward(x)
 
         outputs = []
         x = self.head(c4)
@@ -115,7 +137,7 @@ def get_deeplab(dataset='pascal_voc', backbone='resnet50s', pretrained=False,
     from ...datasets import datasets, VOCSegmentation, VOCAugSegmentation, ADE20KSegmentation
     model = DeepLabV3(datasets[dataset.lower()].NUM_CLASS, backbone=backbone, root=root, **kwargs)
     if pretrained:
-        from .model_store import get_model_file
+        from ..model_store import get_model_file
         model.load_state_dict(torch.load(
             get_model_file('deeplab_%s_%s'%(backbone, acronyms[dataset]), root=root)))
     return model
@@ -139,7 +161,7 @@ def get_deeplab_resnet50_ade(pretrained=False, root='~/.encoding/models', **kwar
     """
     return get_deeplab('ade20k', 'resnet50s', pretrained, root=root, **kwargs)
 
-def get_deeplab_resnet101_ade(pretrained=False, root='~/.encoding/models', **kwargs):
+def get_deeplab_resnest50_ade(pretrained=False, root='~/.encoding/models', **kwargs):
     r"""DeepLabV3 model from the paper `"Context Encoding for Semantic Segmentation"
     <https://arxiv.org/pdf/1803.08904.pdf>`_
 
@@ -156,4 +178,23 @@ def get_deeplab_resnet101_ade(pretrained=False, root='~/.encoding/models', **kwa
     >>> model = get_deeplab_resnet50_ade(pretrained=True)
     >>> print(model)
     """
-    return get_deeplab('ade20k', 'resnet101s', pretrained, root=root, **kwargs)
+    return get_deeplab('ade20k', 'resnest50', pretrained, root=root, **kwargs)
+
+def get_deeplab_resnest101_ade(pretrained=False, root='~/.encoding/models', **kwargs):
+    r"""DeepLabV3 model from the paper `"Context Encoding for Semantic Segmentation"
+    <https://arxiv.org/pdf/1803.08904.pdf>`_
+
+    Parameters
+    ----------
+    pretrained : bool, default False
+        Whether to load the pretrained weights for model.
+    root : str, default '~/.encoding/models'
+        Location for keeping the model parameters.
+
+
+    Examples
+    --------
+    >>> model = get_deeplab_resnet50_ade(pretrained=True)
+    >>> print(model)
+    """
+    return get_deeplab('ade20k', 'resnest101', pretrained, root=root, **kwargs)

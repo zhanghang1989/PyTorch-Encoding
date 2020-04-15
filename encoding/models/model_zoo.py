@@ -54,6 +54,8 @@ def get_model(name, **kwargs):
         'encnet_resnet101_ade': get_encnet_resnet101_ade,
         'fcn_resnet50_ade': get_fcn_resnet50_ade,
         'psp_resnet50_ade': get_psp_resnet50_ade,
+        'deeplab_resnest50_ade': get_deeplab_resnest50_ade,
+        'deeplab_resnest101_ade': get_deeplab_resnest101_ade,
         }
     name = name.lower()
     if name not in models:

@@ -25,6 +25,56 @@ from ..functions import *
 __all__ = ['DistSyncBatchNorm', 'SyncBatchNorm', 'BatchNorm1d', 'BatchNorm2d', 'BatchNorm3d']
 
 class DistSyncBatchNorm(_BatchNorm):
+    r"""Cross-GPU Synchronized Batch normalization (SyncBN)
+
+    Standard BN [1]_ implementation only normalize the data within each device (GPU).
+    SyncBN normalizes the input within the whole mini-batch.
+    We follow the sync-onece implmentation described in the paper [2]_ .
+    Please see the design idea in the `notes <./notes/syncbn.html>`_.
+
+    .. math::
+
+        y = \frac{x - mean[x]}{ \sqrt{Var[x] + \epsilon}} * gamma + beta
+
+    The mean and standard-deviation are calculated per-channel over
+    the mini-batches and gamma and beta are learnable parameter vectors
+    of size C (where C is the input size).
+
+    During training, this layer keeps a running estimate of its computed mean
+    and variance. The running sum is kept with a default momentum of 0.1.
+
+    During evaluation, this running mean/variance is used for normalization.
+
+    Because the BatchNorm is done over the `C` dimension, computing statistics
+    on `(N, H, W)` slices, it's common terminology to call this Spatial BatchNorm
+
+    Args:
+        num_features: num_features from an expected input of
+            size batch_size x num_features x height x width
+        eps: a value added to the denominator for numerical stability.
+            Default: 1e-5
+        momentum: the value used for the running_mean and running_var
+            computation. Default: 0.1
+        sync: a boolean value that when set to ``True``, synchronize across
+            different gpus. Default: ``True``
+        activation : str
+            Name of the activation functions, one of: `leaky_relu` or `none`.
+        slope : float
+            Negative slope for the `leaky_relu` activation.
+
+    Shape:
+        - Input: :math:`(N, C, H, W)`
+        - Output: :math:`(N, C, H, W)` (same shape as input)
+
+    Reference:
+        .. [1] Ioffe, Sergey, and Christian Szegedy. "Batch normalization: Accelerating deep network training by reducing internal covariate shift." *ICML 2015*
+        .. [2] Hang Zhang, Kristin Dana, Jianping Shi, Zhongyue Zhang, Xiaogang Wang, Ambrish Tyagi, and Amit Agrawal. "Context Encoding for Semantic Segmentation." *CVPR 2018*
+
+    Examples:
+        >>> m = DistSyncBatchNorm(100)
+        >>> net = torch.nn.parallel.DistributedDataParallel(m)
+        >>> output = net(input)
+    """
     def __init__(self, num_features, eps=1e-5, momentum=0.1, process_group=None):
         super(DistSyncBatchNorm, self).__init__(num_features, eps=eps, momentum=momentum, affine=True, track_running_stats=True)
         self.process_group = process_group

@@ -11,7 +11,7 @@ import time
 import argparse
 import numpy as np
 from tqdm import tqdm
-from mpi4py import MPI
+#from mpi4py import MPI
 
 import torch
 from torch.utils import data
@@ -65,7 +65,7 @@ class Options():
                             help='number of epochs to train (default: auto)')
         parser.add_argument('--start_epoch', type=int, default=0,
                             metavar='N', help='start epochs (default:0)')
-        parser.add_argument('--batch-size', type=int, default=16,
+        parser.add_argument('--batch-size', type=int, default=2,
                             metavar='N', help='input batch size for \
                             training (default: auto)')
         parser.add_argument('--test-batch-size', type=int, default=16,
@@ -139,13 +139,27 @@ class Options():
         print(args)
         return args
 
-def mpi_avg_all(*args):
-    comm = MPI.COMM_WORLD
-    # send to master
-    sum_args = []
+#def mpi_avg_all(*args):
+#    comm = MPI.COMM_WORLD
+#    # send to master
+#    sum_args = []
+#    for arg in args:
+#        sum_args.append(sum(comm.gather(arg, root=0)))
+#    sum_args = [item / len(args) for item in sum_args]
+#    return tuple(sum_args)
+
+def torch_dist_avg(*args):
+    process_group = torch.distributed.group.WORLD
+    tensor_args = []
+    pending_res = []
     for arg in args:
-        sum_args.append(sum(comm.gather(arg, root=0))/len(args))
-    return tuple(sum_args)
+        tensor_arg = torch.tensor(arg)
+        tensor_args.append(tensor_arg)
+        pending_res.append(torch.distributed.all_reduce(tensor_arg, group=process_group, async_op=True))
+    for res in pending_res:
+        res.wait()
+    ret = [x.item()/len(tensor_args) for x in tensor_args]
+    return ret
 
 def main():
     args = Options().parse()
@@ -278,7 +292,7 @@ def main_worker(gpu, ngpus_per_node, args):
                 print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
 
         if args.gpu == 0:
-            pixAcc, mIoU = mpi_avg_all(pixAcc, mIoU)
+            pixAcc, mIoU = torch_dist_avg(pixAcc, mIoU)
             print('pixAcc: %.3f, mIoU: %.3f' % (pixAcc, mIoU))
 
             new_pred = (pixAcc + mIoU)/2

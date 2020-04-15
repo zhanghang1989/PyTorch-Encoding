@@ -60,6 +60,8 @@ class Options():
         # checking point
         parser.add_argument('--resume', type=str, default=None,
                             help='put the path to resuming file if needed')
+        parser.add_argument('--verify', type=str, default=None,
+                            help='put the path to resuming file if needed')
         parser.add_argument('--model-zoo', type=str, default=None,
                             help='evaluating on model zoo model')
         # evaluation option
@@ -85,15 +87,10 @@ class Options():
         print(args)
         return args
 
-#class AccBatchNorm(torch.nn.BatchNorm2d):
-#    def __init__(self, num_features, eps=1e-05, momentum=0.0, affine=True, track_running_stats=True):
-#        super().__init__(num_features=num_features, eps=eps, momentum=momentum, affine=affine,
-#                         track_running_stats=track_running_stats)
-
 @torch.no_grad()
 def reset_bn_statistics(m):
     if isinstance(m, torch.nn.BatchNorm2d):
-        print(m)
+        #print(m)
         m.momentum = 0.0
         m.reset_running_stats()
 
@@ -130,15 +127,20 @@ def test(args):
     else:
         model = get_segmentation_model(args.model, dataset=args.dataset,
                                        backbone=args.backbone, aux = args.aux,
-                                       se_loss=args.se_loss, norm_layer=torch.nn.BatchNorm2d,
+                                       se_loss=args.se_loss,
+                                       norm_layer=torch.nn.BatchNorm2d if args.acc_bn else SyncBatchNorm,
                                        base_size=args.base_size, crop_size=args.crop_size)
         # resuming checkpoint
-        if args.resume is None or not os.path.isfile(args.resume):
-            raise RuntimeError("=> no checkpoint found at '{}'" .format(args.resume))
-        checkpoint = torch.load(args.resume)
-        # strict=False, so that it is compatible with old pytorch saved models
-        model.load_state_dict(checkpoint['state_dict'])
-        print("=> loaded checkpoint '{}' (epoch {})".format(args.resume, checkpoint['epoch']))
+        if args.verify is not None and os.path.isfile(args.verify):
+            print("=> loading checkpoint '{}'".format(args.verify))
+            model.load_state_dict(torch.load(args.verify))
+        elif args.resume is not None and os.path.isfile(args.resume):
+            checkpoint = torch.load(args.resume)
+            # strict=False, so that it is compatible with old pytorch saved models
+            model.load_state_dict(checkpoint['state_dict'])
+            print("=> loaded checkpoint '{}' (epoch {})".format(args.resume, checkpoint['epoch']))
+        else:
+            raise RuntimeError ("=> no checkpoint found")
 
     print(model)
     # accumulate bn statistics
@@ -148,14 +150,15 @@ def test(args):
         data_kwargs = {'transform': input_transform, 'base_size': args.base_size,
                        'crop_size': args.crop_size}
         trainset = get_dataset(args.dataset, split=args.train_split, mode='train', **data_kwargs)
-        trainloader = data.DataLoader(trainset, batch_size=args.batch_size//8,
+        trainloader = data.DataLoader(trainset, batch_size=args.batch_size,
                                       drop_last=True, shuffle=True, **loader_kwargs)
         tbar = tqdm(trainloader)
         model.train()
         model.cuda()
         for i, (image, dst) in enumerate(tbar):
             image = image.cuda()
-            outputs = model(image)
+            with torch.no_grad():
+                outputs = model(image)
             if i > 1000: break
 
     if args.export:
@@ -163,7 +166,7 @@ def test(args):
         return
 
     scales = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25] if args.dataset == 'citys' else \
-            [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
+            [0.5, 0.75, 1.0, 1.25, 1.5, 1.75]#, 2.0
     evaluator = MultiEvalModule(model, testset.num_class, scales=scales).cuda()
     evaluator.eval()
     metric = utils.SegmentationMetric(testset.num_class)

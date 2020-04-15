@@ -23,7 +23,7 @@ class Bottleneck(nn.Module):
     expansion = 4
     def __init__(self, inplanes, planes, stride=1, downsample=None,
                  radix=1, cardinality=1, bottleneck_width=64,
-                 avd=False, avd_first=False, dilation=1,
+                 avd=False, avd_first=False, dilation=1, is_first=False,
                  rectified_conv=False, rectify_avg=False,
                  norm_layer=None, dropblock_prob=0.0, last_gamma=False):
         super(Bottleneck, self).__init__()
@@ -32,7 +32,7 @@ class Bottleneck(nn.Module):
         self.bn1 = norm_layer(group_width)
         self.dropblock_prob = dropblock_prob
         self.radix = radix
-        self.avd = avd and (stride > 1 or dilation > 1)
+        self.avd = avd and (stride > 1 or is_first)
         self.avd_first = avd_first
 
         if self.avd:
@@ -182,7 +182,7 @@ class ResNet(nn.Module):
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer)
+        self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer, is_first=False)
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
         if dilated or dilation == 4:
             self.layer3 = self._make_layer(block, 256, layers[2], stride=1,
@@ -218,7 +218,7 @@ class ResNet(nn.Module):
                 m.bias.data.zero_()
 
     def _make_layer(self, block, planes, blocks, stride=1, dilation=1, norm_layer=None,
-                    dropblock_prob=0.0):
+                    dropblock_prob=0.0, is_first=True):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             down_layers = []
@@ -243,7 +243,7 @@ class ResNet(nn.Module):
                                 radix=self.radix, cardinality=self.cardinality,
                                 bottleneck_width=self.bottleneck_width,
                                 avd=self.avd, avd_first=self.avd_first,
-                                dilation=1, rectified_conv=self.rectified_conv,
+                                dilation=1, is_first=is_first, rectified_conv=self.rectified_conv,
                                 rectify_avg=self.rectify_avg,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
@@ -252,7 +252,7 @@ class ResNet(nn.Module):
                                 radix=self.radix, cardinality=self.cardinality,
                                 bottleneck_width=self.bottleneck_width,
                                 avd=self.avd, avd_first=self.avd_first,
-                                dilation=2, rectified_conv=self.rectified_conv,
+                                dilation=2, is_first=is_first, rectified_conv=self.rectified_conv,
                                 rectify_avg=self.rectify_avg,
                                 norm_layer=norm_layer, dropblock_prob=dropblock_prob,
                                 last_gamma=self.last_gamma))
@@ -291,7 +291,6 @@ class ResNet(nn.Module):
         x = self.fc(x)
 
         return x
-
 
 def resnet50(pretrained=False, root='~/.encoding/models', **kwargs):
     """Constructs a ResNet-50 model.

@@ -12,7 +12,8 @@ import threading
 import numpy as np
 import torch
 
-__all__ = ['accuracy', 'SegmentationMetric', 'batch_intersection_union', 'batch_pix_accuracy']
+__all__ = ['accuracy', 'SegmentationMetric', 'batch_intersection_union', 'batch_pix_accuracy',
+           'pixel_accuracy', 'intersection_and_union']
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""

@@ -37,7 +37,6 @@ An optimized PyTorch package with CUDA backend.
 
    nn
    parallel
-   models
    utils
 
 Indices and tables

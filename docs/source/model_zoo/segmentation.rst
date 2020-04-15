@@ -1,5 +1,5 @@
-Context Encoding for Semantic Segmentation (EncNet)
-===================================================
+Semantic Segmentation
+=====================
 
 Install Package
 ---------------
@@ -27,6 +27,39 @@ Get Pre-trained Model
 
 .. role:: raw-html(raw)
    :format: html
+
+
+ResNeSt Backbone Models
+~~~~~~~~~~~~~~~~~~~~~~~
+
+==============================================================================  ==============    ==============    =========================================================================================================
+Model                                                                           pixAcc            mIoU              Command                                                                                      
+==============================================================================  ==============    ==============    =========================================================================================================
+DeepLabV3_ResNeSt50_ADE                                                         81.17%            45.12%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest50_ade')" class="toggleblock">cmd</a>`
+DeepLabV3_ResNeSt101_ADE                                                        82.07%            46.91%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest101_ade')" class="toggleblock">cmd</a>`
+==============================================================================  ==============    ==============    =========================================================================================================
+
+.. raw:: html
+
+    <code xml:space="preserve" id="cmd_fcn50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ade20k --model fcn --backbone resnet50 --aux --batch-size 2
+    </code>
+
+    <code xml:space="preserve" id="cmd_fcn_nest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ade20k --model fcn --backbone resnest50 --aux --batch-size 2
+    </code>
+
+    <code xml:space="preserve" id="cmd_deeplab_resnest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ADE20K --model deeplab --backbone resnest50
+    </code>
+
+    <code xml:space="preserve" id="cmd_deeplab_resnest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+    python train_dist.py --dataset ADE20K --model deeplab --backbone resnest101
+    </code>
+
+
+ResNet Backbone Models
+~~~~~~~~~~~~~~~~~~~~~~
 
 ==============================================================================  ==============    ==============    =============================================================================================
 Model                                                                           pixAcc            mIoU              Command                                                                                      
@@ -57,14 +90,6 @@ EncNet_ResNet101_VOC                                                            
 
     <code xml:space="preserve" id="cmd_psp50_ade" style="display: none; text-align: left; white-space: pre-wrap">
     CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model PSP --aux
-    </code>
-
-    <code xml:space="preserve" id="cmd_fcn50_ade" style="display: none; text-align: left; white-space: pre-wrap">
-    python train_dist.py --dataset ade20k --model fcn --backbone resnet50 --aux --batch-size 2
-    </code>
-
-    <code xml:space="preserve" id="cmd_fcn_nest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
-    python train_dist.py --dataset ade20k --model fcn --backbone resnest50 --aux --batch-size 2
     </code>
 
     <code xml:space="preserve" id="cmd_enc50_ade" style="display: none; text-align: left; white-space: pre-wrap">

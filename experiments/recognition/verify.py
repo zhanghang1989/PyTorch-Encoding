@@ -31,8 +31,6 @@ class Options():
         # model params 
         parser.add_argument('--model', type=str, default='densenet',
                             help='network model type (default: densenet)')
-        parser.add_argument('--pretrained', action='store_true', 
-                            default=False, help='load pretrianed mode')
         parser.add_argument('--rectify', action='store_true', 
                             default=False, help='rectify convolution')
         parser.add_argument('--rectify-avg', action='store_true', 
@@ -78,9 +76,7 @@ def main():
         num_workers=args.workers, pin_memory=True if args.cuda else False)
     
     # init the model
-    model_kwargs = {}
-    if args.pretrained:
-        model_kwargs['pretrained'] = True
+    model_kwargs = {'pretrained': True}
 
     if args.rectify:
         model_kwargs['rectified_conv'] = True
