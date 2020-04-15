@@ -48,11 +48,11 @@ jobs:
           cd docs/
           make html
           touch build/html/.nojekyll
-          aws s3 sync build/html/ s3://${{ secrets.AWS_S3_BUCKET }}/${{ secrets.DEST_DIR }}/docs/${{ env.PULL_NUMBER }}/ --acl public-read --follow-symlinks --delete
+          aws s3 sync build/html/ s3://hangzh/encoding/docs/${{ env.PULL_NUMBER }}/ --acl public-read --follow-symlinks --delete
           
       - name: Comment
         if: success()
         uses: thollander/actions-comment-pull-request@master
         with:
-          message: "The docs are uploaded and can be previewed at http://${{ secrets.AWS_S3_BUCKET }}.s3.amazonaws.com/${{ secrets.DEST_DIR }}/${{ env.PULL_NUMBER }}/index.html"
+          message: "The docs are uploaded and can be previewed at http://hangzh.s3.amazonaws.com/encoding/${{ env.PULL_NUMBER }}/index.html"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
