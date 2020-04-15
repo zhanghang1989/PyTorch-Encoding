@@ -18,7 +18,7 @@ import setuptools.command.install
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
-version = '1.1.2'
+version = '1.2.0'
 try:
     from datetime import date
     today = date.today()

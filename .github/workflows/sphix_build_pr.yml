@@ -50,5 +50,5 @@ jobs:
         if: success()
         uses: thollander/actions-comment-pull-request@master
         with:
-          message: "The docs are uploaded and can be previewed at http://hangzh.s3.amazonaws.com/encoding/${{ env.PULL_NUMBER }}/index.html"
+          message: "The docs are uploaded and can be previewed at http://hangzh.s3.amazonaws.com/encoding/docs/${{ env.PULL_NUMBER }}/index.html"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
