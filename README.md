@@ -18,9 +18,8 @@ created by [Hang Zhang](http://hangzh.com/)
 
 ## Citations
 
-**ResNeSt: Split-Attention Networks** [[arXiv]]()
-   
-   [Hang Zhang](http://hangzh.com/), Chongruo Wu, Zhongyue Zhang, Yi Zhu, Zhi Zhang, Haibin Lin, Yue Sun, Tong He, Jonas Muller, R. Manmatha, Mu Li and Alex Smola
+**ResNeSt: Split-Attention Networks** [[arXiv]]()  
+  [Hang Zhang](http://hangzh.com/), Chongruo Wu, Zhongyue Zhang, Yi Zhu, Zhi Zhang, Haibin Lin, Yue Sun, Tong He, Jonas Muller, R. Manmatha, Mu Li and Alex Smola
 ```
 @article{zhang2020resnest,
 title={ResNeSt: Split-Attention Networks},
