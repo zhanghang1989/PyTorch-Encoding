@@ -27,6 +27,9 @@ Get Pre-trained Model
 ResNeSt
 ~~~~~~~
 
+.. note::
+    The provided models were trained using MXNet Gluon, this PyTorch implementation is slightly worse than the original implementation.
+
 ===============================  ==============    ==============    =========================================================================================================
 Model                            crop-size         Acc               Command                                                                                      
 ===============================  ==============    ==============    =========================================================================================================
