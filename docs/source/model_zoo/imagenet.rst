@@ -53,12 +53,12 @@ ResNeSt-269                      416               84.54             :raw-html:`
 
     <code xml:space="preserve" id="cmd_resnest200" style="display: none; text-align: left; white-space: pre-wrap">
     # change the rank for worker node
-    python train_dist.py --dataset imagenet --model resnest200 --lr-scheduler cos --epochs 270 --checkname resnest200 --lr 0.0125 --batch-size 32 --dist-url tcp://MASTER:NODE:IP:ADDRESS:23456 --world-size 8 --label-smoothing 0.1 --mixup 0.2 --no-bn-wd --last-gamma --warmup-epochs 5 --rand-aug --rank 0
+    python train_dist.py --dataset imagenet --model resnest200 --lr-scheduler cos --epochs 270 --checkname resnest200 --lr 0.0125 --batch-size 32 --dist-url tcp://MASTER:NODE:IP:ADDRESS:23456 --world-size 8 --label-smoothing 0.1 --mixup 0.2 --no-bn-wd --last-gamma --warmup-epochs 5 --rand-aug --crop-size 256 --rank 0
     </code>
 
     <code xml:space="preserve" id="cmd_resnest269" style="display: none; text-align: left; white-space: pre-wrap">
     # change the rank for worker node
-    python train_dist.py --dataset imagenet --model resnest269 --lr-scheduler cos --epochs 270 --checkname resnest269 --lr 0.0125 --batch-size 32 --dist-url tcp://MASTER:NODE:IP:ADDRESS:23456 --world-size 8 --label-smoothing 0.1 --mixup 0.2 --no-bn-wd --last-gamma --warmup-epochs 5 --rand-aug --rank 0
+    python train_dist.py --dataset imagenet --model resnest269 --lr-scheduler cos --epochs 270 --checkname resnest269 --lr 0.0125 --batch-size 32 --dist-url tcp://MASTER:NODE:IP:ADDRESS:23456 --world-size 8 --label-smoothing 0.1 --mixup 0.2 --no-bn-wd --last-gamma --warmup-epochs 5 --rand-aug --crop-size 320 --rank 0
     </code>
 
 Test Pretrained
