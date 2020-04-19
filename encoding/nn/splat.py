@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.nn import Conv2d, Module, Linear, BatchNorm2d, ReLU
 from torch.nn.modules.utils import _pair
 
-from ..nn import RFConv2d
+from .rectify import RFConv2d
 from .dropblock import DropBlock2D
 
 __all__ = ['SKConv2d']
