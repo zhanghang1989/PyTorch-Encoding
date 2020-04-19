@@ -33,6 +33,9 @@ def get_model(name, **kwargs):
         'resnest101': resnest101,
         'resnest200': resnest200,
         'resnest269': resnest269,
+        # regnet
+        'regnetx_4g': regnetx_4g,
+        'regnest_4g': regnest_4g,
         # resnet other variants
         'resnet50s': resnet50s,
         'resnet101s': resnet101s,
