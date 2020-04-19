@@ -144,7 +144,7 @@ Test Pretrained
   for example ``EncNet_ResNet50s_ADE``::
 
       python test.py --dataset ADE20K --model-zoo EncNet_ResNet50s_ADE --eval
-      # pixAcc: 0.801, mIoU: 0.415: 100%|████████████████████████| 1276/1276 [46:31<00:00,  2.19s/it]
+      # pixAcc: 0.801, mIoU: 0.415: 100%|████████████████████████| 250/250
 
 Quick Demo
 ~~~~~~~~~~
