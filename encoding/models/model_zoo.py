@@ -30,13 +30,14 @@ models = {
     # deepten paper
     'deepten_resnet50_minc': get_deepten_resnet50_minc,
     # segmentation models
-    'fcn_resnet50_pcontext': get_fcn_resnet50_pcontext,
-    'encnet_resnet50_pcontext': get_encnet_resnet50_pcontext,
-    'encnet_resnet101_pcontext': get_encnet_resnet101_pcontext,
-    'encnet_resnet50_ade': get_encnet_resnet50_ade,
-    'encnet_resnet101_ade': get_encnet_resnet101_ade,
-    'fcn_resnet50_ade': get_fcn_resnet50_ade,
-    'psp_resnet50_ade': get_psp_resnet50_ade,
+    'encnet_resnet101s_coco': get_encnet_resnet101_coco,
+    'fcn_resnet50s_pcontext': get_fcn_resnet50_pcontext,
+    'encnet_resnet50s_pcontext': get_encnet_resnet50_pcontext,
+    'encnet_resnet101s_pcontext': get_encnet_resnet101_pcontext,
+    'encnet_resnet50s_ade': get_encnet_resnet50_ade,
+    'encnet_resnet101s_ade': get_encnet_resnet101_ade,
+    'fcn_resnet50s_ade': get_fcn_resnet50_ade,
+    'psp_resnet50s_ade': get_psp_resnet50_ade,
     'deeplab_resnest50_ade': get_deeplab_resnest50_ade,
     'deeplab_resnest101_ade': get_deeplab_resnest101_ade,
 }

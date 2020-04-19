@@ -8,10 +8,6 @@ import portalocker
 from ..utils import download, check_sha1
 
 _model_sha1 = {name: checksum for checksum, name in [
-    # resnet
-    #('25c4b50959ef024fcc050213a06b614899f94b3d', 'resnet50'),
-    #('2a57e44de9c853fa015b172309a1ee7e2d0e4e2a', 'resnet101'),
-    #('0d43d698c66aceaa2bc0309f55efdd7ff4b143af', 'resnet152'),
     # resnest
     ('fb9de5b360976e3e8bd3679d3e93c5409a5eff3c', 'resnest50'),
     ('966fb78c22323b0c68097c5c1242bd16d3e07fd5', 'resnest101'),
@@ -28,9 +24,6 @@ _model_sha1 = {name: checksum for checksum, name in [
     ('1225f149519c7a0113c43a056153c1bb15468ac0', 'deepten_resnet50_minc'),
     # segmentation models
     ('662e979de25a389f11c65e9f1df7e06c2c356381', 'fcn_resnet50s_ade'),
-    ('eeed8e582f0fdccdba8579e7490570adc6d85c7c', 'fcn_resnet50s_pcontext'),
-    ('54f70c772505064e30efd1ddd3a14e1759faa363', 'psp_resnet50s_ade'),
-    ('5ee47ee28b480cc781a195d13b5806d5bbc616bf', 'encnet_resnet101s_coco'),
     ('4de91d5922d4d3264f678b663f874da72e82db00', 'encnet_resnet50s_pcontext'),
     ('9f27ea13d514d7010e59988341bcbd4140fcc33d', 'encnet_resnet101s_pcontext'),
     ('07ac287cd77e53ea583f37454e17d30ce1509a4a', 'encnet_resnet50s_ade'),
