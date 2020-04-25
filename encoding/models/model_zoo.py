@@ -16,8 +16,6 @@ models = {
     'resnest101': resnest101,
     'resnest200': resnest200,
     'resnest269': resnest269,
-    # rectified
-    'resnet101_rt': resnet101_rt,
     # resnet other variants
     'resnet50s': resnet50s,
     'resnet101s': resnet101s,
