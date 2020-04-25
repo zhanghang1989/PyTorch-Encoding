@@ -14,7 +14,7 @@ _model_sha1 = {name: checksum for checksum, name in [
     ('d7fd712f5a1fcee5b3ce176026fbb6d0d278454a', 'resnest200'),
     ('51ae5f19032e22af4ec08e695496547acdba5ce5', 'resnest269'),
     # rectified	
-    ('9b5dc32b3b36ca1a6b41ecd4906830fc84dae8ed', 'resnet101_rt'),
+    #('9b5dc32b3b36ca1a6b41ecd4906830fc84dae8ed', 'resnet101_rt'),
     # resnet other variants
     ('a75c83cfc89a56a4e8ba71b14f1ec67e923787b3', 'resnet50s'),
     ('03a0f310d6447880f1b22a83bd7d1aa7fc702c6e', 'resnet101s'),
