@@ -4,4 +4,4 @@ from .resnext import *
 from .resnet_variants import *
 from .wideresnet import *
 from  .xception import *
-from .regnest import *
+from .rectified_model import *

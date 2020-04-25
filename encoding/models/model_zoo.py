@@ -16,6 +16,8 @@ models = {
     'resnest101': resnest101,
     'resnest200': resnest200,
     'resnest269': resnest269,
+    # rectified
+    'resnet101_rt': resnet101_rt,
     # resnet other variants
     'resnet50s': resnet50s,
     'resnet101s': resnet101s,
@@ -29,7 +31,7 @@ models = {
     'wideresnet50': wideresnet50,
     # deepten paper
     'deepten_resnet50_minc': get_deepten_resnet50_minc,
-    # segmentation models
+    # segmentation resnet models
     'encnet_resnet101s_coco': get_encnet_resnet101_coco,
     'fcn_resnet50s_pcontext': get_fcn_resnet50_pcontext,
     'encnet_resnet50s_pcontext': get_encnet_resnet50_pcontext,
@@ -38,8 +40,12 @@ models = {
     'encnet_resnet101s_ade': get_encnet_resnet101_ade,
     'fcn_resnet50s_ade': get_fcn_resnet50_ade,
     'psp_resnet50s_ade': get_psp_resnet50_ade,
+    # segmentation resnest models
+    'fcn_resnest50_ade': get_fcn_resnest50_ade,
     'deeplab_resnest50_ade': get_deeplab_resnest50_ade,
     'deeplab_resnest101_ade': get_deeplab_resnest101_ade,
+    'deeplab_resnest200_ade': get_deeplab_resnest200_ade,
+    'deeplab_resnest269_ade': get_deeplab_resnest269_ade,
 }
 
 model_list = list(models.keys())
