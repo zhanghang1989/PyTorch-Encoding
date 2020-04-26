@@ -36,10 +36,10 @@ ResNeSt Backbone Models
 Model                                                                           pixAcc            mIoU              Command                                                                                      
 ==============================================================================  ==============    ==============    =========================================================================================================
 FCN_ResNeSt50_ADE                                                               80.18%            42.94%            :raw-html:`<a href="javascript:toggleblock('cmd_fcn_nest50_ade')" class="toggleblock">cmd</a>`
-DeepLabV3_ResNeSt50_ADE                                                         81.17%            45.12%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest50_ade')" class="toggleblock">cmd</a>`
-DeepLabV3_ResNeSt101_ADE                                                        82.07%            46.91%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest101_ade')" class="toggleblock">cmd</a>`
-DeepLabV3_ResNeSt200_ADE                                                        82.45%            48.36%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest200_ade')" class="toggleblock">cmd</a>`
-DeepLabV3_ResNeSt269_ADE                                                        82.62%            47.60%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest269_ade')" class="toggleblock">cmd</a>`
+DeepLab_ResNeSt50_ADE                                                           81.17%            45.12%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest50_ade')" class="toggleblock">cmd</a>`
+DeepLab_ResNeSt101_ADE                                                          82.07%            46.91%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest101_ade')" class="toggleblock">cmd</a>`
+DeepLab_ResNeSt200_ADE                                                          82.45%            48.36%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest200_ade')" class="toggleblock">cmd</a>`
+DeepLab_ResNeSt269_ADE                                                          82.62%            47.60%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_resnest269_ade')" class="toggleblock">cmd</a>`
 ==============================================================================  ==============    ==============    =========================================================================================================
 
 .. raw:: html
