@@ -78,9 +78,21 @@ Pascal Context Dataset
 ==============================================================================  ==============    ==============    =========================================================================================================
 Model                                                                           pixAcc            mIoU              Command                                                                                      
 ==============================================================================  ==============    ==============    =========================================================================================================
-FCN_ResNeSt50_PContext                                                          81.91%            56.49%            :raw-html:`<a href="javascript:toggleblock('cmd_fcn_nest50_pcont')" class="toggleblock">cmd</a>`
-FCN_ResNeSt101_PContext                                                         82.50%            58.37%            :raw-html:`<a href="javascript:toggleblock('cmd_fcn_nest50_pcont')" class="toggleblock">cmd</a>`
+DeepLab_ResNeSt101_PContext                                                     81.91%            56.49%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_nest101_pcont')" class="toggleblock">cmd</a>`
+DeepLab_ResNeSt200_PContext                                                     82.50%            58.37%            :raw-html:`<a href="javascript:toggleblock('cmd_deeplab_nest200_pcont')" class="toggleblock">cmd</a>`
 ==============================================================================  ==============    ==============    =========================================================================================================
+
+.. raw:: html
+
+    <code xml:space="preserve" id="cmd_deeplab_nest101_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+    python train.py --dataset pcontext --model deeplab --aux --backbone resnest101
+    </code>
+
+    <code xml:space="preserve" id="cmd_enc50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+    python train.py --dataset pcontext --model deeplab --aux --backbone resnest200
+    </code>
+
+
 
 ResNet Backbone Models
 ----------------------
