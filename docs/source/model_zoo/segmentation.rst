@@ -57,7 +57,7 @@ DeepLab_ResNeSt269_ADE                                                          
     </code>
 
     <code xml:space="preserve" id="cmd_deeplab_resnest101_ade" style="display: none; text-align: left; white-space: pre-wrap">
-    python train.py --dataset ADE20K --model deeplab --aux --backbone resnest101
+    python train.py --dataset ADE20K --model deeplab --aux --backbone resnest101 --epochs 180
     </code>
 
     <code xml:space="preserve" id="cmd_deeplab_resnest200_ade" style="display: none; text-align: left; white-space: pre-wrap">
