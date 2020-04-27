@@ -88,7 +88,7 @@ DeepLab_ResNeSt200_PContext                                                     
     python train.py --dataset pcontext --model deeplab --aux --backbone resnest101
     </code>
 
-    <code xml:space="preserve" id="cmd_enc50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+    <code xml:space="preserve" id="cmd_deeplab_nest200_pcont" style="display: none; text-align: left; white-space: pre-wrap">
     python train.py --dataset pcontext --model deeplab --aux --backbone resnest200
     </code>
 
