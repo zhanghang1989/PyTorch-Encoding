@@ -1,3 +1,4 @@
+from .sknet import *
 from .resnet import *
 from .resnest import *
 from .resnext import *

@@ -26,21 +26,22 @@ class ConvBnAct(nn.Sequential):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1,
                  padding=0, dilation=1, radix=0, groups=1,
                  bias=True, padding_mode='zeros',
-                 rectify=False, rectify_avg=False, act=True,
-                 norm_layer=nn.BatchNorm2d):
+                 rectify=False, rectify_avg=False, group_width=None,
+                 act=True, norm_layer=nn.BatchNorm2d):
         super().__init__()
         if radix > 0:
             conv_layer = SplAtConv2d
-            conv_kwargs = {'radix': radix, 'rectify': rectify, 'rectify_avg': rectify_avg, 'norm_layer': norm_layer}
+            conv_kwargs = {'radix': radix, 'rectify': rectify, 'rectify_avg': rectify_avg, 'norm_layer': norm_layer, 'group_width': group_width}
         else:
             conv_layer = RFConv2d if rectify else nn.Conv2d
             conv_kwargs = {'average_mode': rectify_avg} if rectify else {}
         self.add_module("conv", conv_layer(in_channels, out_channels, kernel_size=kernel_size, stride=stride,
                                            padding=padding, dilation=dilation, groups=groups, bias=bias,
                                            padding_mode=padding_mode, **conv_kwargs))
-        self.add_module("bn", nn.BatchNorm2d(out_channels))
-        if act:
-            self.add_module("relu", nn.ReLU())
+        if radix == 0:
+            self.add_module("bn", nn.BatchNorm2d(out_channels))
+            if act:
+                self.add_module("relu", nn.ReLU())
 
 
 class GlobalAvgPool2d(nn.Module):

@@ -16,6 +16,10 @@ models = {
     'resnest101': resnest101,
     'resnest200': resnest200,
     'resnest269': resnest269,
+    # resnest other settings
+    'resnest50_fast_2s8x14d': resnest50_fast_2s8x14d,
+    # sknet
+    'sknet50': sknet50,
     # resnet other variants
     'resnet50s': resnet50s,
     'resnet101s': resnet101s,

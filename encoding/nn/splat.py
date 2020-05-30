@@ -16,7 +16,7 @@ class SplAtConv2d(Module):
     """
     def __init__(self, in_channels, channels, kernel_size, stride=(1, 1), padding=(0, 0),
                  dilation=(1, 1), groups=1, bias=True,
-                 radix=2, reduction_factor=4,
+                 radix=2, reduction_factor=4, group_width=None,
                  rectify=False, rectify_avg=False, norm_layer=None,
                  dropblock_prob=0.0, **kwargs):
         super(SplAtConv2d, self).__init__()
@@ -28,12 +28,21 @@ class SplAtConv2d(Module):
         self.cardinality = groups
         self.channels = channels
         self.dropblock_prob = dropblock_prob
+        total_groups = groups * radix
+        #print(f'channels: {channels}, group_width: {group_width}, radix: {radix}, groups: {groups}')
+        if group_width is not None:
+            assert (channels // group_width) % groups == 0
+            assert in_channels % group_width == 0
+            assert channels * radix % group_width == 0
+            total_groups = channels * radix // group_width
+            assert in_channels % total_groups == 0
+            assert channels * radix % total_groups == 0
         if self.rectify:
             self.conv = RFConv2d(in_channels, channels*radix, kernel_size, stride, padding, dilation,
-                                 groups=groups*radix, bias=bias, average_mode=rectify_avg, **kwargs)
+                                 groups=total_groups, bias=bias, average_mode=rectify_avg, **kwargs)
         else:
             self.conv = Conv2d(in_channels, channels*radix, kernel_size, stride, padding, dilation,
-                               groups=groups*radix, bias=bias, **kwargs)
+                               groups=total_groups, bias=bias, **kwargs)
         self.use_bn = norm_layer is not None
         self.bn0 = norm_layer(channels*radix)
         self.relu = ReLU(inplace=True)
