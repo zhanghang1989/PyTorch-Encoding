@@ -39,7 +39,7 @@ def get_transform(dataset, base_size=None, crop_size=224, rand_aug=False, etrans
             RandomHorizontalFlip(),
             ColorJitter(0.4, 0.4, 0.4),
             ToTensor(),
-            Lighting(0.1, _imagenet_pca['eigval'], _imagenet_pca['eigvec']),
+            #Lighting(0.1, _imagenet_pca['eigval'], _imagenet_pca['eigvec']),
             normalize,
         ])
         val_transforms.extend([
