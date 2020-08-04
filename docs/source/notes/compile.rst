@@ -17,6 +17,22 @@ Installation
         python setup.py install
 
 
+Using Docker
+------------
+
+We strongly recommend using docker option, if you are experiencing any errors using standard installation.
+
+    * Install Docker Engine by following the `Install Docker Engine <https://docs.docker.com/engine/install/>`_.
+    * Build the docker image::
+
+        git clone https://github.com/zhanghang1989/PyTorch-Encoding && cd PyTorch-Encoding
+        bash scripts/build_docker.sh
+
+    * Run the docker::
+
+        bash scripts/run_docker.sh
+
+
 Detailed Steps
 --------------
 
