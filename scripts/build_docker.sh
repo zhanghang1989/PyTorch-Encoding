@@ -1,1 +1,1 @@
-docker build -t encoding .
+docker build --network=host -t encoding .
