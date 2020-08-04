@@ -20,7 +20,7 @@ Installation
 Using Docker
 ------------
 
-We strongly recommend using docker option, if you are experiencing any errors using standard installation.
+We strongly recommend using the docker option, if you are experiencing any errors using standard installation.
 
     * Install Docker Engine by following the `Install Docker Engine <https://docs.docker.com/engine/install/>`_.
     * Build the docker image::
