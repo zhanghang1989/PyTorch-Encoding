@@ -10,7 +10,9 @@
 import torch
 from torch.autograd import Function
 
-from .. import lib
+from encoding import cpu
+if torch.cuda.device_count() > 0:
+    from encoding import gpu
 
 __all__ = ['rectify']
 
@@ -26,9 +28,9 @@ class _rectify(Function):
         ctx.dilation = dilation
         ctx.average = average
         if x.is_cuda:
-            lib.gpu.conv_rectify(y, x, kernel_size, stride, padding, dilation, average)
+            gpu.conv_rectify(y, x, kernel_size, stride, padding, dilation, average)
         else:
-            lib.cpu.conv_rectify(y, x, kernel_size, stride, padding, dilation, average)
+            cpu.conv_rectify(y, x, kernel_size, stride, padding, dilation, average)
         ctx.mark_dirty(y)
         return y
 
@@ -36,10 +38,10 @@ class _rectify(Function):
     def backward(ctx, grad_y):
         x, = ctx.saved_variables
         if x.is_cuda:
-            lib.gpu.conv_rectify(grad_y, x, ctx.kernel_size, ctx.stride,
+            gpu.conv_rectify(grad_y, x, ctx.kernel_size, ctx.stride,
                                  ctx.padding, ctx.dilation, ctx.average)
         else:
-            lib.cpu.conv_rectify(grad_y, x, ctx.kernel_size, ctx.stride,
+            cpu.conv_rectify(grad_y, x, ctx.kernel_size, ctx.stride,
                                  ctx.padding, ctx.dilation, ctx.average)
         ctx.mark_dirty(grad_y)
         return grad_y, None, None, None, None, None, None
