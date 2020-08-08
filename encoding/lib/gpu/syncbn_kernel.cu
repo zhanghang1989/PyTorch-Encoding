@@ -274,7 +274,7 @@ at::Tensor BatchNorm_Forward_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(input_.size(1));
   dim3 threads(getNumThreads(input_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(input_.type(), "BatchNorm_Forward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input_.scalar_type(), "BatchNorm_Forward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> output = devicetensor<scalar_t, 3>(output_);
     DeviceTensor<scalar_t, 3> input = devicetensor<scalar_t, 3>(input_);
@@ -301,7 +301,7 @@ at::Tensor BatchNorm_Forward_Inp_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(input_.size(1));
   dim3 threads(getNumThreads(input_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(input_.type(), "BatchNorm_Forward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input_.scalar_type(), "BatchNorm_Forward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> input = devicetensor<scalar_t, 3>(input_);
     DeviceTensor<scalar_t, 1> ex = devicetensor<scalar_t, 1>(ex_);
@@ -336,7 +336,7 @@ std::vector<at::Tensor> BatchNorm_Inp_Backward_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(output_.size(1));
   dim3 threads(getNumThreads(output_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(output_.type(), "BatchNorm_Inp_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(output_.scalar_type(), "BatchNorm_Inp_Backward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> gradoutput = devicetensor<scalar_t, 3>(gradoutput_);
     DeviceTensor<scalar_t, 3> output = devicetensor<scalar_t, 3>(output_);
@@ -379,7 +379,7 @@ std::vector<at::Tensor> BatchNorm_Backward_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(input_.size(1));
   dim3 threads(getNumThreads(input_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(input_.type(), "BatchNorm_Inp_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input_.scalar_type(), "BatchNorm_Inp_Backward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> gradoutput = devicetensor<scalar_t, 3>(gradoutput_);
     DeviceTensor<scalar_t, 3> input = devicetensor<scalar_t, 3>(input_);
@@ -411,7 +411,7 @@ std::vector<at::Tensor> Expectation_Forward_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(input_.size(1));
   dim3 threads(getNumThreads(input_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(input_.type(), "SumSquare_forward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input_.scalar_type(), "SumSquare_forward_CUDA", ([&] {
     scalar_t norm = scalar_t(1) / (input_.size(0) * input_.size(2));
     /* Device tensors */
     DeviceTensor<scalar_t, 3> input = devicetensor<scalar_t, 3>(input_);
@@ -435,7 +435,7 @@ at::Tensor Expectation_Backward_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(input_.size(1));
   dim3 threads(getNumThreads(input_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(input_.type(), "SumSquare_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input_.scalar_type(), "SumSquare_Backward_CUDA", ([&] {
     scalar_t norm = scalar_t(1) / (input_.size(0) * input_.size(2));
     /* Device tensors */
     DeviceTensor<scalar_t, 3> gradInput = devicetensor<scalar_t, 3>(gradInput_);
@@ -467,7 +467,7 @@ at::Tensor Expectation_Inp_Backward_CUDA(
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
   dim3 blocks(output_.size(1));
   dim3 threads(getNumThreads(output_.size(2)));
-  AT_DISPATCH_FLOATING_TYPES(output_.type(), "SumSquare_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(output_.scalar_type(), "SumSquare_Backward_CUDA", ([&] {
     scalar_t norm = scalar_t(1) / (output_.size(0) * output_.size(2));
     /* Device tensors */
     DeviceTensor<scalar_t, 3> gradInput = devicetensor<scalar_t, 3>(gradInput_);

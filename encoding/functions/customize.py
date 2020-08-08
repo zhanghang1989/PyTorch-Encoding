@@ -11,7 +11,10 @@
 
 import torch
 from torch.autograd import Variable, Function
-from .. import lib
+
+from encoding import cpu
+if torch.cuda.device_count() > 0:
+    from encoding import gpu
 
 __all__ = ['NonMaxSuppression']
 
@@ -49,6 +52,6 @@ def NonMaxSuppression(boxes, scores, threshold):
     >>> surviving_box_indices = indices[mask]
     """
     if boxes.is_cuda:
-        return lib.gpu.non_max_suppression(boxes, scores, threshold)
+        return gpu.non_max_suppression(boxes, scores, threshold)
     else:
-        return lib.cpu.non_max_suppression(boxes, scores, threshold)
+        return cpu.non_max_suppression(boxes, scores, threshold)

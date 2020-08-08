@@ -11,7 +11,10 @@
 import torch
 from torch.autograd import Function, Variable
 import torch.nn.functional as F
-from .. import lib
+
+from encoding import cpu
+if torch.cuda.device_count() > 0:
+    from encoding import gpu
 
 __all__ = ['aggregate', 'scaled_l2', 'pairwise_cosine']
 
@@ -21,18 +24,18 @@ class _aggregate(Function):
         # A \in(BxNxK) R \in(BxNxKxD) => E \in(BxNxD)
         ctx.save_for_backward(A, X, C)
         if A.is_cuda:
-            E = lib.gpu.aggregate_forward(A, X, C)
+            E = gpu.aggregate_forward(A, X, C)
         else:
-            E = lib.cpu.aggregate_forward(A, X, C)
+            E = cpu.aggregate_forward(A, X, C)
         return E
 
     @staticmethod
     def backward(ctx, gradE):
         A, X, C = ctx.saved_variables
         if A.is_cuda:
-            gradA, gradX, gradC = lib.gpu.aggregate_backward(gradE, A, X, C)
+            gradA, gradX, gradC = gpu.aggregate_backward(gradE, A, X, C)
         else:
-            gradA, gradX, gradC = lib.cpu.aggregate_backward(gradE, A, X, C)
+            gradA, gradX, gradC = cpu.aggregate_backward(gradE, A, X, C)
         return gradA, gradX, gradC
 
 def aggregate(A, X, C):
@@ -64,9 +67,9 @@ class _scaled_l2(Function):
     @staticmethod
     def forward(ctx, X, C, S):
         if X.is_cuda:
-            SL = lib.gpu.scaled_l2_forward(X, C, S)
+            SL = gpu.scaled_l2_forward(X, C, S)
         else:
-            SL = lib.cpu.scaled_l2_forward(X, C, S)
+            SL = cpu.scaled_l2_forward(X, C, S)
         ctx.save_for_backward(X, C, S, SL)
         return SL
 
@@ -74,9 +77,9 @@ class _scaled_l2(Function):
     def backward(ctx, gradSL):
         X, C, S, SL = ctx.saved_variables
         if X.is_cuda:
-            gradX, gradC, gradS = lib.gpu.scaled_l2_backward(gradSL, X, C, S, SL)
+            gradX, gradC, gradS = gpu.scaled_l2_backward(gradSL, X, C, S, SL)
         else:
-            gradX, gradC, gradS = lib.cpu.scaled_l2_backward(gradSL, X, C, S, SL)
+            gradX, gradC, gradS = cpu.scaled_l2_backward(gradSL, X, C, S, SL)
         return gradX, gradC, gradS
 
 def scaled_l2(X, C, S):

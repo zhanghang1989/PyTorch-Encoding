@@ -8,7 +8,10 @@
 
 import torch
 from torch.autograd.function import Function
-from .. import lib
+
+from encoding import cpu
+if torch.cuda.device_count() > 0:
+    from encoding import gpu
 
 __all__ = ['dist_syncbatchnorm']
 
@@ -25,9 +28,9 @@ class dist_syncbatchnorm_(Function):
             _ex, _var = running_mean.contiguous(), running_var.contiguous()
             _exs = _var + _ex ** 2 
             if x.is_cuda:
-                y = lib.gpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+                y = gpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
             else:
-                y = lib.cpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+                y = cpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
             ctx.save_for_backward(x, _ex, _exs, gamma, beta)
             return y
 
@@ -36,7 +39,7 @@ class dist_syncbatchnorm_(Function):
             raise ValueError('Expected more than 1 value per channel when training, got input size {}'.format(size))
 
         if x.is_cuda:
-            _ex, _exs = lib.gpu.expectation_forward(x)
+            _ex, _exs = gpu.expectation_forward(x)
         else:
             raise NotImplemented
 
@@ -62,9 +65,9 @@ class dist_syncbatchnorm_(Function):
 
         # BN forward + activation
         if x.is_cuda:
-            y = lib.gpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+            y = gpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
         else:
-            y = lib.cpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
+            y = cpu.batchnorm_forward(x, _ex, _exs, gamma, beta, ctx.eps)
 
         ctx.save_for_backward(x, _ex, _exs, gamma, beta)
         return y
@@ -77,7 +80,7 @@ class dist_syncbatchnorm_(Function):
         # BN backward
         if dz.is_cuda:
             dx, _dex, _dexs, dgamma, dbeta = \
-                lib.gpu.batchnorm_backward(dz, x, _ex, _exs, gamma, beta, ctx.eps)
+                gpu.batchnorm_backward(dz, x, _ex, _exs, gamma, beta, ctx.eps)
         else:
             raise NotImplemented
 
@@ -96,7 +99,7 @@ class dist_syncbatchnorm_(Function):
             _dexs = _dexs / count
 
             if x.is_cuda:
-                dx_ = lib.gpu.expectation_backward(x, _dex, _dexs)
+                dx_ = gpu.expectation_backward(x, _dex, _dexs)
             else:
                 raise NotImplemented
             dx = dx + dx_

@@ -179,7 +179,7 @@ void conv_rectify_cuda_tempalte(
   const uint32_t  num_threads = std::min(at::cuda::getCurrentDeviceProperties()->maxThreadsPerBlock, 1024);
   const uint32_t num_blocks = at::cuda::ATenCeilDiv<uint32_t>(count, num_threads);
 
-  AT_DISPATCH_FLOATING_TYPES(input.type(), "conv_rectify_cuda_frame", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "conv_rectify_cuda_frame", ([&] {
         //using accscalar_t = acc_type<scalar_t, true>;
         scalar_t *output_data = output.data_ptr<scalar_t>();
         conv_rectify_cuda_frame<scalar_t, scalar_t>
