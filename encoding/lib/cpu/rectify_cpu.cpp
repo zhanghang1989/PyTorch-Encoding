@@ -194,7 +194,7 @@ void conv_rectify_cpu_tempalte(
 
   at::Tensor input = input_.contiguous();
 
-  AT_DISPATCH_FLOATING_TYPES(input.type(), "conv_rectify_cuda_frame", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "conv_rectify_cuda_frame", ([&] {
       scalar_t *output_data = output.data_ptr<scalar_t>();
       conv_rectify_cpu_frame<scalar_t>(
         output_data,

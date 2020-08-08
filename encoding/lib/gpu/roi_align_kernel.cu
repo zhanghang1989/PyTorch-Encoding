@@ -372,7 +372,7 @@ at::Tensor ROIAlign_Forward_CUDA(
 
   auto count = output.numel();
   
-  AT_DISPATCH_FLOATING_TYPES(input.type(), "ROIAlign_Forward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "ROIAlign_Forward_CUDA", ([&] {
     RoIAlignForwardKernel<scalar_t>
       <<<ROI_GET_BLOCKS(count),
          ROI_CUDA_NUM_THREADS,
@@ -419,7 +419,7 @@ at::Tensor ROIAlign_Backward_CUDA(
   auto num_rois = rois.size(0);
   auto count = grad_output.numel();
 
-  AT_DISPATCH_FLOATING_TYPES(rois.type(), "ROIAlign_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(rois.scalar_type(), "ROIAlign_Backward_CUDA", ([&] {
     RoIAlignBackwardKernel<scalar_t>
       <<<ROI_GET_BLOCKS(count),
          ROI_CUDA_NUM_THREADS,

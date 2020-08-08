@@ -410,7 +410,7 @@ at::Tensor ROIAlign_Forward_CPU(
   AT_ASSERT(input.is_contiguous());
   AT_ASSERT(bottom_rois.is_contiguous());
 
-  AT_DISPATCH_FLOATING_TYPES(input.type(), "ROIAlign_Forward_CPU", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "ROIAlign_Forward_CPU", ([&] {
     ROIAlignForwardCompute<scalar_t>(
       output.numel(),
       input.data<scalar_t>(),

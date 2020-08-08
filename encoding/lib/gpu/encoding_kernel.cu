@@ -172,7 +172,7 @@ at::Tensor Aggregate_Forward_CUDA(
   dim3 blocks(C_.size(1), C_.size(0), X_.size(0));
   dim3 threads(getNumThreads(X_.size(1)));
 
-  AT_DISPATCH_FLOATING_TYPES(A_.type(), "Aggregate_Forward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(A_.scalar_type(), "Aggregate_Forward_CUDA", ([&] {
     DeviceTensor<scalar_t, 3> E = devicetensor<scalar_t, 3>(E_);
     DeviceTensor<scalar_t, 3> A = devicetensor<scalar_t, 3>(A_);
     DeviceTensor<scalar_t, 3> X = devicetensor<scalar_t, 3>(X_);
@@ -197,7 +197,7 @@ std::vector<at::Tensor> Aggregate_Backward_CUDA(
   // B, K, D
   dim3 blocks(C_.size(0), X_.size(1), X_.size(0));
   dim3 threads(getNumThreads(C_.size(1)));
-  AT_DISPATCH_FLOATING_TYPES(A_.type(), "Aggregate_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(A_.scalar_type(), "Aggregate_Backward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> GA = devicetensor<scalar_t, 3>(gradA_);
     DeviceTensor<scalar_t, 3> GE = devicetensor<scalar_t, 3>(GE_);
@@ -220,7 +220,7 @@ at::Tensor ScaledL2_Forward_CUDA(
   dim3 blocks(C_.size(0), X_.size(1), X_.size(0));
   dim3 threads(getNumThreads(C_.size(1)));
 
-  AT_DISPATCH_FLOATING_TYPES(X_.type(), "ScaledL2_Forward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(X_.scalar_type(), "ScaledL2_Forward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> SL = devicetensor<scalar_t, 3>(SL_);
     DeviceTensor<scalar_t, 3> X = devicetensor<scalar_t, 3>(X_);
@@ -249,7 +249,7 @@ std::vector<at::Tensor> ScaledL2_Backward_CUDA(
   dim3 blocks2(C_.size(1), C_.size(0));
   dim3 threads2(getNumThreads(X_.size(1)));
   auto GS_ = (GSL_ * (SL_ / S_.view({1, 1, C_.size(0)}))).sum(0).sum(0);
-  AT_DISPATCH_FLOATING_TYPES(X_.type(), "ScaledL2_Backward_CUDA", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(X_.scalar_type(), "ScaledL2_Backward_CUDA", ([&] {
     /* Device tensors */
     DeviceTensor<scalar_t, 3> GSL = devicetensor<scalar_t, 3>(GSL_);
     DeviceTensor<scalar_t, 3> GX = devicetensor<scalar_t, 3>(GX_);
