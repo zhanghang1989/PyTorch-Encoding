@@ -1,3 +1,4 @@
+#include <exception>
 #include <torch/extension.h>
 #include <ATen/ATen.h>
 #include <vector>
@@ -7,6 +8,7 @@
 #include <thrust/transform.h>
 #include "common.h"
 
+using namespace std;
 
 namespace {
 
@@ -40,5 +42,7 @@ void LeakyRelu_Backward_CUDA(at::Tensor z, at::Tensor dz, float slope) {
   */
   // unstable after scaling
   at::leaky_relu_(z, 1.0 / slope);
-  at::leaky_relu_backward(dz, z, slope, false);
+  // This API is changed on pytorch side, feature broken
+  throw "PyTorch API break, Don't use InplaceABN for now.";
+  // at::leaky_relu_backward(dz, z, slope, false);
 }
