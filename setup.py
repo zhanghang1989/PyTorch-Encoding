@@ -87,6 +87,16 @@ def get_extensions():
             "-D__CUDA_NO_HALF2_OPERATORS__",
         ]
 
+        gencodes = [
+                '-gencode', 'arch=compute_52,code=sm_52',
+                '-gencode', 'arch=compute_60,code=sm_60',
+                '-gencode', 'arch=compute_61,code=sm_61',
+                '-gencode', 'arch=compute_70,code=sm_70',
+                #'-gencode', 'arch=compute_75,code=sm_75',
+                #'-gencode', 'arch=compute_75,code=compute_75',
+                ]
+        extra_compile_args['nvcc'] += gencodes
+
         ext_modules.extend([
             CUDAExtension(
                 "encoding.gpu",
