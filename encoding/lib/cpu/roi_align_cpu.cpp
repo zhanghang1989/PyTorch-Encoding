@@ -413,7 +413,7 @@ at::Tensor ROIAlign_Forward_CPU(
   AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "ROIAlign_Forward_CPU", ([&] {
     ROIAlignForwardCompute<scalar_t>(
       output.numel(),
-      input.data<scalar_t>(),
+      input.data_ptr<scalar_t>(),
       static_cast<scalar_t>(spatial_scale),
       channels,
       height,
@@ -421,9 +421,9 @@ at::Tensor ROIAlign_Forward_CPU(
       pooled_height,
       pooled_width, 
       sampling_ratio,
-      bottom_rois.data<scalar_t>(),
+      bottom_rois.data_ptr<scalar_t>(),
       roi_cols,
-      output.data<scalar_t>());
+      output.data_ptr<scalar_t>());
   }));
 
   return output;
@@ -456,10 +456,10 @@ at::Tensor ROIAlign_Backward_CPU(
 
   AT_ASSERT(bottom_rois.is_contiguous());
 
-  AT_DISPATCH_FLOATING_TYPES(bottom_rois.type(), "ROIAlign_Backward_CPU", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(bottom_rois.scalar_type(), "ROIAlign_Backward_CPU", ([&] {
     ROIAlignBackwardCompute<scalar_t>(
       grad_output.numel(), 
-      grad_output.data<scalar_t>(),
+      grad_output.data_ptr<scalar_t>(),
       num_rois,
       static_cast<scalar_t>(spatial_scale),
       channels,
@@ -468,8 +468,8 @@ at::Tensor ROIAlign_Backward_CPU(
       pooled_height,
       pooled_width,
       sampling_ratio,
-      grad_in.data<scalar_t>(),
-      bottom_rois.data<scalar_t>(),
+      grad_in.data_ptr<scalar_t>(),
+      bottom_rois.data_ptr<scalar_t>(),
       roi_cols);
   }));
 
