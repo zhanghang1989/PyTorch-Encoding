@@ -348,10 +348,10 @@ std::vector<at::Tensor> box_encoder(const int N_img,
                                     const at::Tensor& dbox,
                                     float criteria) {
   // Check everything is on the device
-  AT_ASSERTM(bbox_input.type().is_cuda(), "bboxes must be a CUDA tensor");
-  AT_ASSERTM(bbox_offsets.type().is_cuda(), "bbox offsets must be a CUDA tensor");
-  AT_ASSERTM(labels_input.type().is_cuda(), "labels must be a CUDA tensor");
-  AT_ASSERTM(dbox.type().is_cuda(), "dboxes must be a CUDA tensor");
+  AT_ASSERTM(bbox_input.is_cuda(), "bboxes must be a CUDA tensor");
+  AT_ASSERTM(bbox_offsets.is_cuda(), "bbox offsets must be a CUDA tensor");
+  AT_ASSERTM(labels_input.is_cuda(), "labels must be a CUDA tensor");
+  AT_ASSERTM(dbox.is_cuda(), "dboxes must be a CUDA tensor");
 
   // Check at least offsets, bboxes and labels are consistent
   // Note: offsets is N+1 vs. N for labels
@@ -374,7 +374,7 @@ std::vector<at::Tensor> box_encoder(const int N_img,
   // allocate final outputs (known size)
 #ifdef DEBUG
   printf("%d x %d\n", N_img * M, 4);
-  // at::Tensor bbox_out = dbox.type().tensor({N_img * M, 4});
+  // at::Tensor bbox_out = dbox.scalar_type().tensor({N_img * M, 4});
   printf("allocating %lu bytes for output labels\n", N_img*M*sizeof(long));
 #endif
   at::Tensor labels_out = at::empty({N_img * M}, labels_input.options());
@@ -398,15 +398,15 @@ std::vector<at::Tensor> box_encoder(const int N_img,
   // Encode the inputs
   const int THREADS_PER_BLOCK = 256;
   encode<THREADS_PER_BLOCK, 256><<<N_img, THREADS_PER_BLOCK, 0, stream.stream()>>>(N_img,
-                      (float4*)bbox_input.data<float>(),
-                      labels_input.data<long>(),
-                      bbox_offsets.data<int>(),
+                      (float4*)bbox_input.data_ptr<float>(),
+                      labels_input.data_ptr<long>(),
+                      bbox_offsets.data_ptr<int>(),
                       M,
-                      (float4*)dbox.data<float>(),
+                      (float4*)dbox.data_ptr<float>(),
                       criteria,
-                      workspace.data<uint8_t>(),
-                      (float4*)bbox_out.data<float>(),
-                      labels_out.data<long>());
+                      workspace.data_ptr<uint8_t>(),
+                      (float4*)bbox_out.data_ptr<float>(),
+                      labels_out.data_ptr<long>());
 
   THCudaCheck(cudaGetLastError());
   return {bbox_out, labels_out};
@@ -429,11 +429,11 @@ at::Tensor calc_ious(const int N_img,
   // Get IoU of all source x default box pairs
   calc_ious_kernel<<<N_img, 256, 0, stream.stream()>>>(
                         N_img,
-                        (float4*)boxes1.data<float>(),
-                        boxes1_offsets.data<int>(),
+                        (float4*)boxes1.data_ptr<float>(),
+                        boxes1_offsets.data_ptr<int>(),
                         M,
-                        (float4*)boxes2.data<float>(),
-                        ious.data<float>());
+                        (float4*)boxes2.data_ptr<float>(),
+                        ious.data_ptr<float>());
 
   THCudaCheck(cudaGetLastError());
   return ious;
@@ -543,9 +543,9 @@ std::vector<at::Tensor> random_horiz_flip(
     W = img.size(3);
   }
 
-  assert(img.type().is_cuda());
-  assert(bboxes.type().is_cuda());
-  assert(bbox_offsets.type().is_cuda());
+  assert(img.is_cuda());
+  assert(bboxes.is_cuda());
+  assert(bbox_offsets.is_cuda());
 
   // printf("%d %d %d %d\n", N, C, H, W);
   // Need temp storage of size img
@@ -554,7 +554,7 @@ std::vector<at::Tensor> random_horiz_flip(
 
   auto stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-      img.type(),
+      img.scalar_type(),
       "HorizFlipImagesAndBoxes",
       [&] {
         HorizFlipImagesAndBoxes<scalar_t><<<N, dim3(16, 16), 0, stream.stream()>>>(
@@ -562,12 +562,12 @@ std::vector<at::Tensor> random_horiz_flip(
           C,
           H,
           W,
-          img.data<scalar_t>(),
-          bboxes.data<float>(),
-          bbox_offsets.data<int>(),
+          img.data_ptr<scalar_t>(),
+          bboxes.data_ptr<float>(),
+          bbox_offsets.data_ptr<int>(),
           p,
-          flip.data<float>(),
-          tmp_img.data<scalar_t>(),
+          flip.data_ptr<float>(),
+          tmp_img.data_ptr<scalar_t>(),
           nhwc);
         THCudaCheck(cudaGetLastError());
       });

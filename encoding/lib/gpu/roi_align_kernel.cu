@@ -379,7 +379,7 @@ at::Tensor ROIAlign_Forward_CUDA(
          0,
          at::cuda::getCurrentCUDAStream()>>>(
           count,
-          input.data<scalar_t>(),
+          input.data_ptr<scalar_t>(),
           static_cast<scalar_t>(spatial_scale),
           channels,
           height,
@@ -387,8 +387,8 @@ at::Tensor ROIAlign_Forward_CUDA(
           pooled_height,
           pooled_width,
           sampling_ratio,
-          rois.data<scalar_t>(),
-          output.data<scalar_t>());
+          rois.data_ptr<scalar_t>(),
+          output.data_ptr<scalar_t>());
   }));
   AT_ASSERT(cudaGetLastError() == cudaSuccess);
   return output;
@@ -426,7 +426,7 @@ at::Tensor ROIAlign_Backward_CUDA(
          0,
          at::cuda::getCurrentCUDAStream()>>>(
           count,
-          grad_output.data<scalar_t>(),
+          grad_output.data_ptr<scalar_t>(),
           num_rois,
           static_cast<scalar_t>(spatial_scale),
           channels,
@@ -435,8 +435,8 @@ at::Tensor ROIAlign_Backward_CUDA(
           pooled_height,
           pooled_width,
           sampling_ratio,
-          grad_in.data<scalar_t>(),
-          rois.data<scalar_t>());
+          grad_in.data_ptr<scalar_t>(),
+          rois.data_ptr<scalar_t>());
   }));
 
   AT_ASSERT(cudaGetLastError() == cudaSuccess);

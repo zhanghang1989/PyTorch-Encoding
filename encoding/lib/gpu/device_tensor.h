@@ -101,7 +101,7 @@ struct DeviceTensor<DType, 1> {
 
 template<typename DType, int Dim>
 static DeviceTensor<DType, Dim> devicetensor(const at::Tensor &blob) {
-  DType *data = blob.data<DType>();
+  DType *data = blob.data_ptr<DType>();
   DeviceTensor<DType, Dim> tensor(data, nullptr);
   for (int i = 0; i < Dim; ++i) {
     tensor.size_[i] = blob.size(i);

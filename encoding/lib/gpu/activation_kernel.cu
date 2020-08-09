@@ -40,5 +40,5 @@ void LeakyRelu_Backward_CUDA(at::Tensor z, at::Tensor dz, float slope) {
   */
   // unstable after scaling
   at::leaky_relu_(z, 1.0 / slope);
-  at::leaky_relu_backward(dz, z, slope);
+  at::leaky_relu_backward(dz, z, slope, false);
 }
