@@ -9,9 +9,9 @@ Installation
  
     * PIP Install::
 
-        pip install torch-encoding --pre
+        pip install git+https://github.com/zhanghang1989/PyTorch-Encoding/
         # macOS
-        CC=clang CXX=clang++ pip install torch-encoding --pre
+        CC=clang CXX=clang++ pip install git+https://github.com/zhanghang1989/PyTorch-Encoding/
 
     * Install from source:: 
 
