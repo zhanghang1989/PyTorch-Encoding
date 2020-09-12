@@ -59,7 +59,7 @@ Assuming CUDA and cudnn are already sucessfully installed, otherwise please refe
 
       * Install this package::
 
-         pip install torch-encoding --pre
+         pip install git+https://github.com/zhanghang1989/PyTorch-Encoding/
 
 Citations
 ---------
