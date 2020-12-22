@@ -193,13 +193,15 @@ class SyncBatchNorm(_BatchNorm):
                 "worker_queue": self.worker_queues[self.worker_ids.index(x.get_device())]
             }
         if self.inplace:
-            return inp_syncbatchnorm(x, self.weight, self.bias, self.running_mean, self.running_var,
+            y, _, _ = inp_syncbatchnorm(x, self.weight, self.bias, self.running_mean, self.running_var,
                                      extra, self.sync, self.training, self.momentum, self.eps,
-                                     self.activation, self.slope).view(input_shape)
+                                     self.activation, self.slope)
+            return y.view(input_shape)
         else:
-            return syncbatchnorm(x, self.weight, self.bias, self.running_mean, self.running_var,
+            y, _, _  = syncbatchnorm(x, self.weight, self.bias, self.running_mean, self.running_var,
                                  extra, self.sync, self.training, self.momentum, self.eps,
-                                 self.activation, self.slope).view(input_shape)
+                                 self.activation, self.slope)
+            return y.view(input_shape)
 
     def extra_repr(self):
         if self.activation == 'none':
