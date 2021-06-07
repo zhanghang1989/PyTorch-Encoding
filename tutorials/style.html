@@ -1,0 +1,695 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MSG-Net Style Transfer Example &mdash; Encoding master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Implementing Synchronized Multi-GPU Batch Normalization" href="syncbn.html" />
+    <link rel="prev" title="Semantic Segmentation" href="../model_zoo/segmentation.html" /> 
+
+
+  <script type="text/javascript" src="../_static/js/hidebib.js"></script>    
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+<div class="container-fluid header-holder" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://hangzhang.org/" aria-label="Hang Zhang"></a>
+      <!--a class="navbar-brand" href="https://hangzhang.org/" aria-label="Hang Zhang">
+          <img style="max-width:50px" src="https://hangzhang.org//files/favicon.png">
+      </a-->
+
+      <div class="main-menu">
+        <ul>
+          <li> <a href="https://hangzhang.org/"><span class="fa fa-home"></span> Home</a></li>
+          <li> <a href="https://hangzhang.org//#publication"><span class="fa fa-book"></span> Publications</a></li>
+          <li> <a href="https://hangzhang.org//blog/"><span class="fa fa-pencil"></span> Blog</a></li>
+          <li> <a href="https://hangzhang.org//PyTorch-Encoding/"><span class="fa fa-tasks"></span> Toolkit</a></li>
+
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<!--div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <div class="ecosystem-dropdown">
+              <a id="dropdownMenuButton" data-toggle="ecosystem-dropdown">
+                Ecosystem
+              </a>
+              <div class="ecosystem-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/hub"">
+                  <span class=dropdown-title>Models (Beta)</span>
+                  <p>Discover, publish, and reuse pre-trained models</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/ecosystem">
+                  <span class=dropdown-title>Tools & Libraries</span>
+                  <p>Explore the ecosystem of tools and libraries</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/resources"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/features">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div-->
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+                <div class="version">
+                  master (1.2.2b20210607)
+                </div>
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/compile.html">Install and Citations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Model Zoo</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../model_zoo/imagenet.html">Image Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model_zoo/segmentation.html">Semantic Segmentation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MSG-Net Style Transfer Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="syncbn.html">Implementing Synchronized Multi-GPU Batch Normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="texture.html">Deep TEN: Deep Texture Encoding Network Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../nn.html">encoding.nn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parallel.html">encoding.parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">encoding.utils</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>MSG-Net Style Transfer Example</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorials/style.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="msg-net-style-transfer-example">
+<h1>MSG-Net Style Transfer Example<a class="headerlink" href="#msg-net-style-transfer-example" title="Permalink to this headline">¶</a></h1>
+<a class="reference internal image-reference" href="../_images/figure1.jpg"><img alt="../_images/figure1.jpg" class="align-left" src="../_images/figure1.jpg" style="width: 55%;" /></a>
+<p>We provide PyTorh Implementation of <a class="reference internal" href="#msg-net">MSG-Net</a> and <a class="reference internal" href="#neural-style">Neural Style</a> in the <a class="reference external" href="https://github.com/zhanghang1989/PyTorch-Style-Transfer">GitHub repo</a>.
+We also provide <a class="reference external" href="https://github.com/zhanghang1989/MSG-Net/">Torch</a> and
+<a class="reference external" href="https://github.com/zhanghang1989/MXNet-Gluon-Style-Transfer">MXNet</a> implementations.</p>
+<section id="tabe-of-content">
+<h2>Tabe of content<a class="headerlink" href="#tabe-of-content" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Real-time Style Transfer using <a class="reference internal" href="#msg-net">MSG-Net</a></dt><dd><ul>
+<li><p><a class="reference internal" href="#stylize-images-using-pre-trained-model">Stylize Images using Pre-trained Model</a></p></li>
+<li><p><a class="reference internal" href="#train-your-own-msg-net-model">Train Your Own MSG-Net Model</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference internal" href="#neural-style">Neural Style</a></p></li>
+</ul>
+</section>
+<section id="msg-net">
+<h2>MSG-Net<a class="headerlink" href="#msg-net" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Hang Zhang, and Kristin Dana. “Multi-style Generative Network for Real-time Transfer.”:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">zhang2017multistyle</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">Multi</span><span class="o">-</span><span class="n">style</span> <span class="n">Generative</span> <span class="n">Network</span> <span class="k">for</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">Transfer</span><span class="p">},</span>
+    <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Zhang</span><span class="p">,</span> <span class="n">Hang</span> <span class="ow">and</span> <span class="n">Dana</span><span class="p">,</span> <span class="n">Kristin</span><span class="p">},</span>
+    <span class="n">journal</span><span class="o">=</span><span class="p">{</span><span class="n">arXiv</span> <span class="n">preprint</span> <span class="n">arXiv</span><span class="p">:</span><span class="mf">1703.06953</span><span class="p">},</span>
+    <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2017</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="stylize-images-using-pre-trained-model">
+<h2>Stylize Images Using Pre-trained Model<a class="headerlink" href="#stylize-images-using-pre-trained-model" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Clone the repo and download the pre-trained model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">zhanghang1989</span><span class="o">/</span><span class="n">PyTorch</span><span class="o">-</span><span class="n">Style</span><span class="o">-</span><span class="n">Transfer</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">PyTorch</span><span class="o">-</span><span class="n">Style</span><span class="o">-</span><span class="n">Transfer</span><span class="o">/</span><span class="n">experiments</span>
+<span class="n">bash</span> <span class="n">models</span><span class="o">/</span><span class="n">download_model</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</li>
+<li><p>Camera Demo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">camera_demo</span><span class="o">.</span><span class="n">py</span> <span class="n">demo</span> <span class="o">--</span><span class="n">model</span> <span class="n">models</span><span class="o">/</span><span class="mi">9</span><span class="n">styles</span><span class="o">.</span><span class="n">model</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<img alt="../_images/myimage.gif" src="../_images/myimage.gif" />
+<ul>
+<li><p>Test the model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="nb">eval</span> <span class="o">--</span><span class="n">content</span><span class="o">-</span><span class="n">image</span> <span class="n">images</span><span class="o">/</span><span class="n">content</span><span class="o">/</span><span class="n">venice</span><span class="o">-</span><span class="n">boat</span><span class="o">.</span><span class="n">jpg</span> <span class="o">--</span><span class="n">style</span><span class="o">-</span><span class="n">image</span> <span class="n">images</span><span class="o">/</span><span class="mi">9</span><span class="n">styles</span><span class="o">/</span><span class="n">candy</span><span class="o">.</span><span class="n">jpg</span> <span class="o">--</span><span class="n">model</span> <span class="n">models</span><span class="o">/</span><span class="mi">9</span><span class="n">styles</span><span class="o">.</span><span class="n">model</span> <span class="o">--</span><span class="n">content</span><span class="o">-</span><span class="n">size</span> <span class="mi">1024</span>
+</pre></div>
+</div>
+<p>If you don’t have a GPU, simply set <code class="docutils literal notranslate"><span class="pre">--cuda=0</span></code>. For a different style, set <code class="docutils literal notranslate"><span class="pre">--style-image</span> <span class="pre">path/to/style</span></code>.</p>
+<p>If you would to stylize your own photo, change the <code class="docutils literal notranslate"><span class="pre">--content-image</span> <span class="pre">path/to/your/photo</span></code>. More options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--content-image</span></code>: path to content image you want to stylize.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--style-image</span></code>: path to style image (typically covered during the training).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--model</span></code>: path to the pre-trained model to be used for stylizing the image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output-image</span></code>: path for saving the output image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--content-size</span></code>: the content image size to test on.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cuda</span></code>: set it to 1 for running on GPU, 0 for CPU.</p></li>
+</ul>
+</li>
+</ul>
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/1.jpg" width="220px" /> <img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/2.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/3.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/4.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/5.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/6.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/7.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/8.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/9.jpg" width="220px" /></section>
+<section id="train-your-own-msg-net-model">
+<h2>Train Your Own MSG-Net Model<a class="headerlink" href="#train-your-own-msg-net-model" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Download the dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">dataset</span><span class="o">/</span><span class="n">download_dataset</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+</li>
+<li><p>Train the model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="n">train</span> <span class="o">--</span><span class="n">epochs</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<p>If you would like to customize styles, set <code class="docutils literal notranslate"><span class="pre">--style-folder</span> <span class="pre">path/to/your/styles</span></code>. More options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--style-folder</span></code>: path to the folder style images.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--vgg-model-dir</span></code>: path to folder where the vgg model will be downloaded.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--save-model-dir</span></code>: path to folder where trained model will be saved.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cuda</span></code>: set it to 1 for running on GPU, 0 for CPU.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="neural-style">
+<h2>Neural Style<a class="headerlink" href="#neural-style" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf">Image Style Transfer Using Convolutional Neural Networks</a> by Leon A. Gatys, Alexander S. Ecker, and Matthias Bethge:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="n">optim</span> <span class="o">--</span><span class="n">content</span><span class="o">-</span><span class="n">image</span> <span class="n">images</span><span class="o">/</span><span class="n">content</span><span class="o">/</span><span class="n">venice</span><span class="o">-</span><span class="n">boat</span><span class="o">.</span><span class="n">jpg</span> <span class="o">--</span><span class="n">style</span><span class="o">-</span><span class="n">image</span> <span class="n">images</span><span class="o">/</span><span class="mi">9</span><span class="n">styles</span><span class="o">/</span><span class="n">candy</span><span class="o">.</span><span class="n">jpg</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--content-image</span></code>: path to content image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--style-image</span></code>: path to style image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output-image</span></code>: path for saving the output image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--content-size</span></code>: the content image size to test on.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--style-size</span></code>: the style image size to test on.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cuda</span></code>: set it to 1 for running on GPU, 0 for CPU.</p></li>
+</ul>
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g1.jpg" width="220px" /> <img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g2.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g3.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g4.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g5.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g6.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g7.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g8.jpg" width="220px" />
+<img src ="https://raw.githubusercontent.com/zhanghang1989/PyTorch-Style-Transfer/master/images/g9.jpg" width="220px" /></section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="syncbn.html" class="btn btn-neutral float-right" title="Implementing Synchronized Multi-GPU Batch Normalization" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="../model_zoo/segmentation.html" class="btn btn-neutral" title="Semantic Segmentation" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hang Zhang.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+    
+
+  <!--  -->
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">MSG-Net Style Transfer Example</a><ul>
+<li><a class="reference internal" href="#tabe-of-content">Tabe of content</a></li>
+<li><a class="reference internal" href="#msg-net">MSG-Net</a></li>
+<li><a class="reference internal" href="#stylize-images-using-pre-trained-model">Stylize Images Using Pre-trained Model</a></li>
+<li><a class="reference internal" href="#train-your-own-msg-net-model">Train Your Own MSG-Net Model</a></li>
+<li><a class="reference internal" href="#neural-style">Neural Style</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <!--div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+        </div>
+      </div>
+    </div>
+  </div-->
+
+  <!--footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://pytorch.org/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+            <li><a href="https://pytorch.org/get-started">Get Started</a></li>
+            <li><a href="https://pytorch.org/features">Features</a></li>
+            <li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+            <li><a href="https://pytorch.org/blog/">Blog</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+            <li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+            <li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Stay Connected</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+  </footer-->
+  <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <!--div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/features">Features</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/hub">PyTorch Hub</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/resources">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div-->
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

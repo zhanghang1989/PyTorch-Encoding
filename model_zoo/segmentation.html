@@ -1,0 +1,975 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Semantic Segmentation &mdash; Encoding master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MSG-Net Style Transfer Example" href="../tutorials/style.html" />
+    <link rel="prev" title="Image Classification" href="imagenet.html" /> 
+
+
+  <script type="text/javascript" src="../_static/js/hidebib.js"></script>    
+
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+
+
+<div class="container-fluid header-holder" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://hangzhang.org/" aria-label="Hang Zhang"></a>
+      <!--a class="navbar-brand" href="https://hangzhang.org/" aria-label="Hang Zhang">
+          <img style="max-width:50px" src="https://hangzhang.org//files/favicon.png">
+      </a-->
+
+      <div class="main-menu">
+        <ul>
+          <li> <a href="https://hangzhang.org/"><span class="fa fa-home"></span> Home</a></li>
+          <li> <a href="https://hangzhang.org//#publication"><span class="fa fa-book"></span> Publications</a></li>
+          <li> <a href="https://hangzhang.org//blog/"><span class="fa fa-pencil"></span> Blog</a></li>
+          <li> <a href="https://hangzhang.org//PyTorch-Encoding/"><span class="fa fa-tasks"></span> Toolkit</a></li>
+
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<!--div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <div class="ecosystem-dropdown">
+              <a id="dropdownMenuButton" data-toggle="ecosystem-dropdown">
+                Ecosystem
+              </a>
+              <div class="ecosystem-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/hub"">
+                  <span class=dropdown-title>Models (Beta)</span>
+                  <p>Discover, publish, and reuse pre-trained models</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/ecosystem">
+                  <span class=dropdown-title>Tools & Libraries</span>
+                  <p>Explore the ecosystem of tools and libraries</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <div class="resources-dropdown">
+              <a id="resourcesDropdownButton" data-toggle="resources-dropdown">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/resources"">
+                  <span class=dropdown-title>Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/features">
+                  <span class=dropdown-title>About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div-->
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+                <div class="version">
+                  master (1.2.2b20210607)
+                </div>
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/compile.html">Install and Citations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Model Zoo</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="imagenet.html">Image Classification</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Semantic Segmentation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Other Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/style.html">MSG-Net Style Transfer Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/syncbn.html">Implementing Synchronized Multi-GPU Batch Normalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/texture.html">Deep TEN: Deep Texture Encoding Network Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../nn.html">encoding.nn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parallel.html">encoding.parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">encoding.utils</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Semantic Segmentation</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/model_zoo/segmentation.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="semantic-segmentation">
+<h1>Semantic Segmentation<a class="headerlink" href="#semantic-segmentation" title="Permalink to this headline">¶</a></h1>
+<section id="install-package">
+<h2>Install Package<a class="headerlink" href="#install-package" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Clone the GitHub repo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">zhanghang1989</span><span class="o">/</span><span class="n">PyTorch</span><span class="o">-</span><span class="n">Encoding</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install PyTorch Encoding (if not yet). Please follow the installation guide <a class="reference external" href="../notes/compile.html">Installing PyTorch Encoding</a>.</p></li>
+</ul>
+</section>
+<section id="get-pre-trained-model">
+<h2>Get Pre-trained Model<a class="headerlink" href="#get-pre-trained-model" title="Permalink to this headline">¶</a></h2>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<dl class="simple">
+<dt>The model names contain the training information. For instance <code class="docutils literal notranslate"><span class="pre">EncNet_ResNet50s_ADE</span></code>:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">EncNet</span></code> indicate the algorithm is “Context Encoding for Semantic Segmentation”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ResNet50</span></code> is the name of backbone network.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ADE</span></code> means the ADE20K dataset.</p></li>
+</ul>
+</dd>
+</dl>
+<p>How to get pretrained model, for example <code class="docutils literal notranslate"><span class="pre">EncNet_ResNet50s_ADE</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s1">&#39;EncNet_ResNet50s_ADE&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After clicking <code class="docutils literal notranslate"><span class="pre">cmd</span></code> in the table, the command for training the model can be found below the table.</p>
+</div>
+</section>
+<section id="resnest-backbone-models">
+<h2>ResNeSt Backbone Models<a class="headerlink" href="#resnest-backbone-models" title="Permalink to this headline">¶</a></h2>
+<section id="ade20k-dataset">
+<h3>ADE20K Dataset<a class="headerlink" href="#ade20k-dataset" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>pixAcc</p></th>
+<th class="head"><p>mIoU</p></th>
+<th class="head"><p>Command</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FCN_ResNeSt50_ADE</p></td>
+<td><p>80.18%</p></td>
+<td><p>42.94%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_fcn_nest50_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-odd"><td><p>DeepLab_ResNeSt50_ADE</p></td>
+<td><p>81.17%</p></td>
+<td><p>45.12%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_resnest50_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-even"><td><p>DeepLab_ResNeSt101_ADE</p></td>
+<td><p>82.07%</p></td>
+<td><p>46.91%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_resnest101_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-odd"><td><p>DeepLab_ResNeSt200_ADE</p></td>
+<td><p>82.45%</p></td>
+<td><p>48.36%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_resnest200_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-even"><td><p>DeepLab_ResNeSt269_ADE</p></td>
+<td><p>82.62%</p></td>
+<td><p>47.60%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_resnest269_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+</tbody>
+</table>
+<code xml:space="preserve" id="cmd_fcn_nest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset ADE20K --model fcn  --aux --backbone resnest50
+</code>
+
+<code xml:space="preserve" id="cmd_enc_nest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset ADE20K --model EncNet --aux --se-loss --backbone resnest50
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_resnest50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset ADE20K --model deeplab --aux --backbone resnest50
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_resnest101_ade" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset ADE20K --model deeplab --aux --backbone resnest101 --epochs 180
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_resnest200_ade" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset ADE20K --model deeplab --aux --backbone resnest200 --epochs 180
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_resnest269_ade" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset ADE20K --model deeplab --aux --backbone resnest269
+</code></section>
+<section id="pascal-context-dataset">
+<h3>Pascal Context Dataset<a class="headerlink" href="#pascal-context-dataset" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>pixAcc</p></th>
+<th class="head"><p>mIoU</p></th>
+<th class="head"><p>Command</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FCN_ResNeSt50_PContext</p></td>
+<td><p>79.19%</p></td>
+<td><p>51.98%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_fcn_nest50_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-odd"><td><p>DeepLab_ResNeSt50_PContext</p></td>
+<td><p>80.41%</p></td>
+<td><p>53.19%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_nest50_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-even"><td><p>DeepLab_ResNeSt101_PContext</p></td>
+<td><p>81.91%</p></td>
+<td><p>56.49%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_nest101_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-odd"><td><p>DeepLab_ResNeSt200_PContext</p></td>
+<td><p>82.50%</p></td>
+<td><p>58.37%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_nest200_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-even"><td><p>DeepLab_ResNeSt269_PContext</p></td>
+<td><p>83.06%</p></td>
+<td><p>58.92%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_deeplab_nest269_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+</tbody>
+</table>
+<code xml:space="preserve" id="cmd_fcn_nest50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset pcontext --model fcn --aux --backbone resnest50
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_nest50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset pcontext --model deeplab --aux --backbone resnest50
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_nest101_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset pcontext --model deeplab --aux --backbone resnest101
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_nest200_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset pcontext --model deeplab --aux --backbone resnest200
+</code>
+
+<code xml:space="preserve" id="cmd_deeplab_nest269_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+python train.py --dataset pcontext --model deeplab --aux --backbone resnest269
+</code></section>
+</section>
+<section id="resnet-backbone-models">
+<h2>ResNet Backbone Models<a class="headerlink" href="#resnet-backbone-models" title="Permalink to this headline">¶</a></h2>
+<section id="id1">
+<h3>ADE20K Dataset<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>pixAcc</p></th>
+<th class="head"><p>mIoU</p></th>
+<th class="head"><p>Command</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FCN_ResNet50s_ADE</p></td>
+<td><p>78.7%</p></td>
+<td><p>38.5%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_fcn50_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-odd"><td><p>EncNet_ResNet50s_ADE</p></td>
+<td><p>80.1%</p></td>
+<td><p>41.5%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_enc50_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-even"><td><p>EncNet_ResNet101s_ADE</p></td>
+<td><p>81.3%</p></td>
+<td><p>44.4%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_enc101_ade')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+</tbody>
+</table>
+<code xml:space="preserve" id="cmd_fcn50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model FCN
+</code>
+
+<code xml:space="preserve" id="cmd_psp50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model PSP --aux
+</code>
+
+<code xml:space="preserve" id="cmd_enc50_ade" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model EncNet --aux --se-loss
+</code>
+
+<code xml:space="preserve" id="cmd_enc101_ade" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset ADE20K --model EncNet --aux --se-loss --backbone resnet101
+</code></section>
+<section id="id2">
+<h3>Pascal Context Dataset<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>pixAcc</p></th>
+<th class="head"><p>mIoU</p></th>
+<th class="head"><p>Command</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Encnet_ResNet50s_PContext</p></td>
+<td><p>79.2%</p></td>
+<td><p>51.0%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_enc50_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+<tr class="row-odd"><td><p>EncNet_ResNet101s_PContext</p></td>
+<td><p>80.7%</p></td>
+<td><p>54.1%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_enc101_pcont')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+</tbody>
+</table>
+<code xml:space="preserve" id="cmd_fcn50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset PContext --model FCN
+</code>
+
+<code xml:space="preserve" id="cmd_enc50_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset PContext --model EncNet --aux --se-loss
+</code>
+
+<code xml:space="preserve" id="cmd_enc101_pcont" style="display: none; text-align: left; white-space: pre-wrap">
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset PContext --model EncNet --aux --se-loss --backbone resnet101
+</code></section>
+<section id="pascal-voc-dataset">
+<h3>Pascal VOC Dataset<a class="headerlink" href="#pascal-voc-dataset" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 36%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>pixAcc</p></th>
+<th class="head"><p>mIoU</p></th>
+<th class="head"><p>Command</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>EncNet_ResNet101s_VOC</p></td>
+<td><p>N/A</p></td>
+<td><p>85.9%</p></td>
+<td><p><span class="raw-html"><a href="javascript:toggleblock('cmd_enc101_voc')" class="toggleblock">cmd</a></span></p></td>
+</tr>
+</tbody>
+</table>
+<code xml:space="preserve" id="cmd_enc101_voc" style="display: none; text-align: left; white-space: pre-wrap">
+# First finetuning COCO dataset pretrained model on augmented set
+# You can also train from scratch on COCO by yourself
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset Pascal_aug --model-zoo EncNet_Resnet101_COCO --aux --se-loss --lr 0.001 --syncbn --ngpus 4 --checkname res101 --ft
+# Finetuning on original set
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --dataset Pascal_voc --model encnet --aux  --se-loss --backbone resnet101 --lr 0.0001 --syncbn --ngpus 4 --checkname res101 --resume runs/Pascal_aug/encnet/res101/checkpoint.params --ft
+</code></section>
+<section id="test-pretrained">
+<h3>Test Pretrained<a class="headerlink" href="#test-pretrained" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>Prepare the datasets by runing the scripts in the <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> folder, for example preparing <code class="docutils literal notranslate"><span class="pre">PASCAL</span> <span class="pre">Context</span></code> dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">prepare_ade20k</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p>The test script is in the <code class="docutils literal notranslate"><span class="pre">experiments/segmentation/</span></code> folder. For evaluating the model (using MS),
+for example <code class="docutils literal notranslate"><span class="pre">EncNet_ResNet50s_ADE</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">test</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">dataset</span> <span class="n">ADE20K</span> <span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">zoo</span> <span class="n">EncNet_ResNet50s_ADE</span> <span class="o">--</span><span class="nb">eval</span>
+<span class="c1"># pixAcc: 0.801, mIoU: 0.415: 100%|████████████████████████| 250/250</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+<section id="train-your-own-model">
+<h2>Train Your Own Model<a class="headerlink" href="#train-your-own-model" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Prepare the datasets by runing the scripts in the <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> folder, for example preparing <code class="docutils literal notranslate"><span class="pre">ADE20K</span></code> dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">prepare_ade20k</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p>The training script is in the <code class="docutils literal notranslate"><span class="pre">experiments/segmentation/</span></code> folder, example training command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">train</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">dataset</span> <span class="n">ade20k</span> <span class="o">--</span><span class="n">model</span> <span class="n">encnet</span> <span class="o">--</span><span class="n">aux</span> <span class="o">--</span><span class="n">se</span><span class="o">-</span><span class="n">loss</span>
+</pre></div>
+</div>
+</li>
+<li><p>Detail training options, please run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">train.py</span> <span class="pre">-h</span></code>. Commands for reproducing pre-trained models can be found in the table.</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The validation metrics during the training only using center-crop is just for monitoring the
+training correctness purpose. For evaluating the pretrained model on validation set using MS,
+please use the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">test</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">dataset</span> <span class="n">pcontext</span> <span class="o">--</span><span class="n">model</span> <span class="n">encnet</span> <span class="o">--</span><span class="n">aux</span> <span class="o">--</span><span class="n">se</span><span class="o">-</span><span class="n">loss</span> <span class="o">--</span><span class="n">resume</span> <span class="n">mycheckpoint</span> <span class="o">--</span><span class="nb">eval</span>
+</pre></div>
+</div>
+</div>
+<section id="quick-demo">
+<h3>Quick Demo<a class="headerlink" href="#quick-demo" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">encoding</span>
+
+<span class="c1"># Get the model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s1">&#39;Encnet_ResNet50s_PContext&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="c1"># Prepare the image</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/zhanghang1989/image-data/blob/master/&#39;</span> <span class="o">+</span> \
+      <span class="s1">&#39;encoding/segmentation/pcontext/2010_001829_org.jpg?raw=true&#39;</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;example.jpg&#39;</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span>
+    <span class="n">encoding</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Make prediction</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">predict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c1"># Get color pallete for visualization</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">encoding</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_mask_pallete</span><span class="p">(</span><span class="n">predict</span><span class="p">,</span> <span class="s1">&#39;pascal_voc&#39;</span><span class="p">)</span>
+<span class="n">mask</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;output.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/zhanghang1989/image-data/master/encoding/segmentation/pcontext/2010_001829_org.jpg"><img alt="https://raw.githubusercontent.com/zhanghang1989/image-data/master/encoding/segmentation/pcontext/2010_001829_org.jpg" src="https://raw.githubusercontent.com/zhanghang1989/image-data/master/encoding/segmentation/pcontext/2010_001829_org.jpg" style="width: 45%;" /></a>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/zhanghang1989/image-data/master/encoding/segmentation/pcontext/2010_001829.png"><img alt="https://raw.githubusercontent.com/zhanghang1989/image-data/master/encoding/segmentation/pcontext/2010_001829.png" src="https://raw.githubusercontent.com/zhanghang1989/image-data/master/encoding/segmentation/pcontext/2010_001829.png" style="width: 45%;" /></a>
+</section>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li><p>Hang Zhang et al. “ResNeSt: Split-Attention Networks” <em>arXiv 2020</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">zhang2020resnest</span><span class="p">,</span>
+<span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">ResNeSt</span><span class="p">:</span> <span class="n">Split</span><span class="o">-</span><span class="n">Attention</span> <span class="n">Networks</span><span class="p">},</span>
+<span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Zhang</span><span class="p">,</span> <span class="n">Hang</span> <span class="ow">and</span> <span class="n">Wu</span><span class="p">,</span> <span class="n">Chongruo</span> <span class="ow">and</span> <span class="n">Zhang</span><span class="p">,</span> <span class="n">Zhongyue</span> <span class="ow">and</span> <span class="n">Zhu</span><span class="p">,</span> <span class="n">Yi</span> <span class="ow">and</span> <span class="n">Zhang</span><span class="p">,</span> <span class="n">Zhi</span> <span class="ow">and</span> <span class="n">Lin</span><span class="p">,</span> <span class="n">Haibin</span> <span class="ow">and</span> <span class="n">Sun</span><span class="p">,</span> <span class="n">Yue</span> <span class="ow">and</span> <span class="n">He</span><span class="p">,</span> <span class="n">Tong</span> <span class="ow">and</span> <span class="n">Muller</span><span class="p">,</span> <span class="n">Jonas</span> <span class="ow">and</span> <span class="n">Manmatha</span><span class="p">,</span> <span class="n">R</span><span class="o">.</span> <span class="ow">and</span> <span class="n">Li</span><span class="p">,</span> <span class="n">Mu</span> <span class="ow">and</span> <span class="n">Smola</span><span class="p">,</span> <span class="n">Alexander</span><span class="p">},</span>
+<span class="n">journal</span><span class="o">=</span><span class="p">{</span><span class="n">arXiv</span> <span class="n">preprint</span> <span class="n">arXiv</span><span class="p">:</span><span class="mf">2004.08955</span><span class="p">},</span>
+<span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2020</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>Hang Zhang, Kristin Dana, Jianping Shi, Zhongyue Zhang, Xiaogang Wang, Ambrish Tyagi, Amit Agrawal. “Context Encoding for Semantic Segmentation”  <em>The IEEE Conference on Computer Vision and Pattern Recognition (CVPR) 2018</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@InProceedings</span><span class="p">{</span><span class="n">Zhang_2018_CVPR</span><span class="p">,</span>
+<span class="n">author</span> <span class="o">=</span> <span class="p">{</span><span class="n">Zhang</span><span class="p">,</span> <span class="n">Hang</span> <span class="ow">and</span> <span class="n">Dana</span><span class="p">,</span> <span class="n">Kristin</span> <span class="ow">and</span> <span class="n">Shi</span><span class="p">,</span> <span class="n">Jianping</span> <span class="ow">and</span> <span class="n">Zhang</span><span class="p">,</span> <span class="n">Zhongyue</span> <span class="ow">and</span> <span class="n">Wang</span><span class="p">,</span> <span class="n">Xiaogang</span> <span class="ow">and</span> <span class="n">Tyagi</span><span class="p">,</span> <span class="n">Ambrish</span> <span class="ow">and</span> <span class="n">Agrawal</span><span class="p">,</span> <span class="n">Amit</span><span class="p">},</span>
+<span class="n">title</span> <span class="o">=</span> <span class="p">{</span><span class="n">Context</span> <span class="n">Encoding</span> <span class="k">for</span> <span class="n">Semantic</span> <span class="n">Segmentation</span><span class="p">},</span>
+<span class="n">booktitle</span> <span class="o">=</span> <span class="p">{</span><span class="n">The</span> <span class="n">IEEE</span> <span class="n">Conference</span> <span class="n">on</span> <span class="n">Computer</span> <span class="n">Vision</span> <span class="ow">and</span> <span class="n">Pattern</span> <span class="n">Recognition</span> <span class="p">(</span><span class="n">CVPR</span><span class="p">)},</span>
+<span class="n">month</span> <span class="o">=</span> <span class="p">{</span><span class="n">June</span><span class="p">},</span>
+<span class="n">year</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2018</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../tutorials/style.html" class="btn btn-neutral float-right" title="MSG-Net Style Transfer Example" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="imagenet.html" class="btn btn-neutral" title="Image Classification" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hang Zhang.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+    
+
+  <!--  -->
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Semantic Segmentation</a><ul>
+<li><a class="reference internal" href="#install-package">Install Package</a></li>
+<li><a class="reference internal" href="#get-pre-trained-model">Get Pre-trained Model</a></li>
+<li><a class="reference internal" href="#resnest-backbone-models">ResNeSt Backbone Models</a><ul>
+<li><a class="reference internal" href="#ade20k-dataset">ADE20K Dataset</a></li>
+<li><a class="reference internal" href="#pascal-context-dataset">Pascal Context Dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#resnet-backbone-models">ResNet Backbone Models</a><ul>
+<li><a class="reference internal" href="#id1">ADE20K Dataset</a></li>
+<li><a class="reference internal" href="#id2">Pascal Context Dataset</a></li>
+<li><a class="reference internal" href="#pascal-voc-dataset">Pascal VOC Dataset</a></li>
+<li><a class="reference internal" href="#test-pretrained">Test Pretrained</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#train-your-own-model">Train Your Own Model</a><ul>
+<li><a class="reference internal" href="#quick-demo">Quick Demo</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#citation">Citation</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <!--div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+        </div>
+      </div>
+    </div>
+  </div-->
+
+  <!--footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://pytorch.org/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+            <li><a href="https://pytorch.org/get-started">Get Started</a></li>
+            <li><a href="https://pytorch.org/features">Features</a></li>
+            <li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+            <li><a href="https://pytorch.org/blog/">Blog</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+            <li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+            <li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Stay Connected</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+  </footer-->
+  <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <!--div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/features">Features</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/hub">PyTorch Hub</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/resources">Resources</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div-->
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
