@@ -19,8 +19,6 @@
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
-#include <THC/THCNumerics.cuh>
-#include <THC/THC.h>
 
 #include <cuda.h>
 
@@ -378,14 +376,14 @@ std::vector<at::Tensor> box_encoder(const int N_img,
   printf("allocating %lu bytes for output labels\n", N_img*M*sizeof(long));
 #endif
   at::Tensor labels_out = at::empty({N_img * M}, labels_input.options());
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
 
   // copy default boxes to outputs
 #ifdef DEBUG
   printf("allocating %lu bytes for output bboxes\n", N_img*M*4*sizeof(float));
 #endif
   at::Tensor bbox_out = dbox.repeat({N_img, 1});
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
 
   // need to allocate some workspace
 #ifdef DEBUG
@@ -393,7 +391,7 @@ std::vector<at::Tensor> box_encoder(const int N_img,
 #endif
   // at::Tensor workspace = at::CUDA(at::kByte).zeros({8 * M * N_img});
   at::Tensor workspace = at::zeros({8 * M * N_img}, at::CUDA(at::kByte));
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
 
   // Encode the inputs
   const int THREADS_PER_BLOCK = 256;
@@ -408,7 +406,7 @@ std::vector<at::Tensor> box_encoder(const int N_img,
                       (float4*)bbox_out.data_ptr<float>(),
                       labels_out.data_ptr<long>());
 
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return {bbox_out, labels_out};
 }
 
@@ -435,7 +433,7 @@ at::Tensor calc_ious(const int N_img,
                         (float4*)boxes2.data_ptr<float>(),
                         ious.data_ptr<float>());
 
-  THCudaCheck(cudaGetLastError());
+  C10_CUDA_CHECK(cudaGetLastError());
   return ious;
 }
 
@@ -569,7 +567,7 @@ std::vector<at::Tensor> random_horiz_flip(
           flip.data_ptr<float>(),
           tmp_img.data_ptr<scalar_t>(),
           nhwc);
-        THCudaCheck(cudaGetLastError());
+        C10_CUDA_CHECK(cudaGetLastError());
       });
 
   // copy tmp_img -> img
