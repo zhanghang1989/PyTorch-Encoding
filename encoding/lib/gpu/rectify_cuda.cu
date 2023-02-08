@@ -10,6 +10,8 @@
 #include <ATen/cuda/detail/IndexUtils.cuh>
 #include <ATen/cuda/detail/KernelUtils.h>
 
+#include "common.h"
+
 
 template <typename dest_t, typename src_t>
 static inline dest_t safe_downcast(src_t v)
