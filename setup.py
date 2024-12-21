@@ -48,6 +48,7 @@ requirements = [
     'Pillow',
     'scipy',
     'requests',
+    'portalocker',
 ]
 
 def get_extensions():
