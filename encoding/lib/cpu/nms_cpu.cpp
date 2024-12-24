@@ -67,7 +67,7 @@ std::vector<at::Tensor> Non_Max_Suppression_CPU(
             rawMask[i] = 0;
         }
         ++pos;
-        while(pos < (1+batch)*num_boxes-1 and (rawMask[pos] == 0))
+        while(pos < (1+batch)*num_boxes-1 && (rawMask[pos] == 0))
           ++pos;
       }
     }
@@ -89,7 +89,7 @@ std::vector<at::Tensor> Non_Max_Suppression_CPU(
             rawMask[i] = 0;
         }
         ++pos;
-        while(pos < (1+batch)*num_boxes-1 and (rawMask[pos] == 0))
+        while(pos < (1+batch)*num_boxes-1 && (rawMask[pos] == 0))
           ++pos;
       }
     }
