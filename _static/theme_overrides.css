@@ -1,0 +1,13 @@
+/* ============================================================
+ * Theme overrides on top of autorch_sphinx_theme.
+ * Keeps the responsive-table fix from the original repo.
+ * Visual tokens (colors, header, cards, dark mode) live in
+ *   _static/css/encoding.css
+ * so they mirror hangzhang.org's hz-overlay.css in one place.
+ * ============================================================ */
+
+/* Wider, wrapping tables (original fix) */
+@media screen and (min-width: 767px) {
+    .wy-table-responsive table td { white-space: normal !important; }
+    .wy-table-responsive { overflow: visible !important; }
+}
