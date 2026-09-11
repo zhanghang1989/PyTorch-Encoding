@@ -1,9 +1,11 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# Builds Sphinx docs for a PR and uploads them to S3 for preview.
+# Runs on self-hosted (AWS creds + preview bucket).
+# For more information see:
+# https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: Build Docs
 
-on: 
+on:
   pull_request:
     branches: [ master ]
 
@@ -11,44 +13,40 @@ jobs:
   docs:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Set PR Number
-        uses: actions/github-script@0.3.0
-        with:
-          github-token: ${{github.token}}
-          script: |
-            const core = require('@actions/core')
-            const prNumber = context.payload.number;
-            core.exportVariable('PULL_NUMBER', prNumber);
-            core.exportVariable("PATH", "/home/ubuntu/anaconda3/bin:/usr/local/bin:/usr/bin/:/bin:$PATH")
-        
+      - name: Set up conda PATH and PR number
+        run: |
+          echo "/home/ubuntu/anaconda3/bin:/usr/local/bin:/usr/bin:/bin" >> $GITHUB_PATH
+          echo "PULL_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install numpy -I
           pip install pytest torch
-          
+
       - name: Install package
+        # --no-build-isolation so setup.py can `import torch` at build time.
         run: |
-          pip install -e .
-          
+          pip install --no-build-isolation -e .
+
       - name: Install Sphix Dependencies
         run: |
           cd docs/
           pip install -r requirements.txt
-          
+
       - name: Build Sphinx docs
         run: |
           cd docs/
           make html
           touch build/html/.nojekyll
           aws s3 sync build/html/ s3://hangzh/encoding/docs/${{ env.PULL_NUMBER }}/ --acl public-read --follow-symlinks --delete
-          
+
       - name: Comment
         if: success()
-        uses: thollander/actions-comment-pull-request@master
+        uses: thollander/actions-comment-pull-request@v2
         with:
           message: "The docs are uploaded and can be previewed at http://hangzh.s3.amazonaws.com/encoding/docs/${{ env.PULL_NUMBER }}/index.html"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

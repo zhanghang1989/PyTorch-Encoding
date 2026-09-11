@@ -26,8 +26,10 @@ jobs:
           pip install pytest torch
           
       - name: Install package
+        # --no-build-isolation so setup.py can `import torch` at build time
+        # (torch was installed in the previous step).
         run: |
-          pip install -e .
+          pip install --no-build-isolation -e .
           
       - name: Install Sphix Dependencies
         run: |
