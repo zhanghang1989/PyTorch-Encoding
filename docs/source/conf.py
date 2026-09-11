@@ -23,6 +23,18 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+
+# The `encoding` package imports compiled C++/CUDA extensions
+# (`encoding.cpu`, `encoding.gpu`) at import time. When building docs on a
+# machine where those extensions aren't (or can't be) built, fall back to
+# lightweight mocks so autodoc can still introspect the Python source.
+try:
+    from encoding import cpu as _cpu  # noqa: F401
+except Exception:
+    from unittest.mock import MagicMock
+    sys.modules.setdefault('encoding.cpu', MagicMock())
+    sys.modules.setdefault('encoding.gpu', MagicMock())
+
 import encoding
 import autorch_sphinx_theme
 import glob

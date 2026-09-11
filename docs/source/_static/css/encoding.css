@@ -1,253 +1,381 @@
 /* ============================================================
- * PyTorch-Encoding docs — styled to match hangzhang.org (2026)
- * Accent: XPeng red (#ee1c25) with soft red tinted surfaces.
- * Falls back to reasonable defaults when hz-overlay isn't loaded.
+ * PyTorch-Encoding docs — visual parity with hangzhang.org (2026)
+ *
+ * Mirrors the design tokens, glassy sticky header, accent stripe,
+ * badge/card styling, and dark-mode palette from
+ *   zhanghang1989.github.io/files/css/hz-overlay.css
+ * so this site feels like the same product as the personal site.
  * ============================================================ */
 
 :root {
-    --enc-accent: #ee1c25;
-    --enc-accent-hover: #c8161d;
-    --enc-accent-soft: rgba(238, 28, 37, 0.10);
-    --enc-fg: #1f2328;
-    --enc-fg-muted: #6b7280;
-    --enc-border: rgba(0, 0, 0, 0.08);
-    --enc-bg: #ffffff;
-    --enc-bg-elev: #ffffff;
-    --enc-sidebar-bg: #f7f7f9;
-    --enc-search-bg: #ffffff;
-    --enc-search-border: rgba(0, 0, 0, 0.10);
-    --enc-code-bg: #f6f8fa;
-    --enc-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
-    --enc-radius: 10px;
+    --hz-bg: #ffffff;
+    --hz-bg-elev: #ffffff;
+    --hz-header-bg: rgba(255, 255, 255, 0.72);
+    --hz-fg: #111827;
+    --hz-fg-muted: #6b7280;
+    --hz-border: rgba(0, 0, 0, 0.08);
+    --hz-accent: #ee1c25;
+    --hz-accent-hover: #c8161d;
+    --hz-accent-soft: rgba(238, 28, 37, 0.10);
+    --hz-sidebar-bg: #f7f7f9;
+    --hz-code-bg: #f6f8fa;
+    --hz-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+    --hz-card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.06), 0 12px 28px rgba(0, 0, 0, 0.10);
+    --hz-radius: 12px;
+    --hz-radius-sm: 8px;
+    --hz-header-h: 60px;
 }
+
+html[data-theme="dark"] {
+    --hz-bg: #0b1020;
+    --hz-bg-elev: #131a2e;
+    --hz-header-bg: rgba(11, 16, 32, 0.72);
+    --hz-fg: #e6ebf5;
+    --hz-fg-muted: #9aa3b2;
+    --hz-border: rgba(255, 255, 255, 0.08);
+    --hz-accent: #ff6b6b;
+    --hz-accent-hover: #ffb4b4;
+    --hz-accent-soft: rgba(255, 107, 107, 0.14);
+    --hz-sidebar-bg: #10162a;
+    --hz-code-bg: #0f1630;
+    --hz-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.30), 0 4px 12px rgba(0, 0, 0, 0.30);
+    --hz-card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        --hz-bg: #0b1020;
+        --hz-bg-elev: #131a2e;
+        --hz-header-bg: rgba(11, 16, 32, 0.72);
+        --hz-fg: #e6ebf5;
+        --hz-fg-muted: #9aa3b2;
+        --hz-border: rgba(255, 255, 255, 0.08);
+        --hz-accent: #ff6b6b;
+        --hz-accent-hover: #ffb4b4;
+        --hz-accent-soft: rgba(255, 107, 107, 0.14);
+        --hz-sidebar-bg: #10162a;
+        --hz-code-bg: #0f1630;
+        --hz-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.30), 0 4px 12px rgba(0, 0, 0, 0.30);
+        --hz-card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+}
+
+/* --- Global typography ------------------------------------------------- */
+html { scroll-behavior: smooth; }
+:target { scroll-margin-top: 90px; }
 
 body {
-    font-family: "Lato", "proxima-nova", "Helvetica Neue", Arial, sans-serif;
-    color: var(--enc-fg);
+    font-family: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--hz-fg);
+    background: var(--hz-bg);
+    transition: background 0.25s ease, color 0.25s ease;
 }
 
-/* Default header fonts */
-h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.caption {
-    font-family: "Lato", "proxima-nova", "Helvetica Neue", Arial, sans-serif;
-    color: var(--enc-fg);
+h1, h2, h3, h4, h5, h6,
+.rst-content .toctree-wrapper p.caption, p.caption, legend {
+    font-family: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--hz-fg);
 }
 
-/* Sidebar search area — subtle, matches the light glassy header */
-.wy-side-nav-search {
-    background-color: var(--enc-sidebar-bg);
-    border-bottom: 1px solid var(--enc-border);
+p, li, td, div { color: var(--hz-fg); }
+
+/* Links match hangzhang.org accent */
+a { color: var(--hz-accent); text-decoration: none; transition: color 0.15s ease; }
+a:hover { color: var(--hz-accent-hover); text-decoration: underline; }
+a:visited { color: var(--hz-accent-hover); }
+
+/* Section rule under h2 like the personal site */
+.rst-content h2 {
+    border-bottom: 2px solid var(--hz-border);
+    padding-bottom: 6px;
+    margin-top: 32px;
+}
+
+/* ============================================================
+ * Sticky, glassy site header
+ * The theme ships a solid blue fixed header — override to a
+ * translucent, blurred white bar with a red accent stripe,
+ * exactly like hangzhang.org.
+ * ============================================================ */
+.container-fluid.header-holder,
+.header-holder {
+    position: sticky !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--hz-header-h) !important;
+    z-index: 9999;
+    background: var(--hz-header-bg) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--hz-border) !important;
+    transition: background 0.25s ease, border-color 0.25s ease;
+}
+@media screen and (min-width: 1100px) {
+    .header-holder { height: var(--hz-header-h) !important; }
+}
+
+/* Accent stripe under the header */
+.container-fluid.header-holder::after,
+.header-holder::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -3px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--hz-accent) 0%, var(--hz-accent) 40%, transparent 100%);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Header logo — reuse site favicon, sized to match hangzhang.org */
+.header-logo {
+    height: 50px !important;
+    width: 50px !important;
+    background-image: url("https://hangzhang.org/files/favicon.png") !important;
+    background-size: 40px 40px !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    border-radius: 10px;
+}
+
+/* Menu links: dark text with red hover (theme default is white on blue) */
+.header-holder .main-menu ul li a,
+.main-menu a { color: var(--hz-fg) !important; font-weight: 500; }
+.header-holder .main-menu ul li a:hover,
+.main-menu a:hover { color: var(--hz-accent) !important; }
+.header-holder .main-menu ul li.active a { color: var(--hz-accent) !important; }
+.header-holder .main-menu ul li.active:after { color: var(--hz-accent) !important; }
+
+/* Nudge content down so it doesn't collide with the sticky header */
+.pytorch-container,
+.wy-nav-content-wrap { scroll-margin-top: var(--hz-header-h); }
+
+/* ============================================================
+ * Sidebar / search input
+ * ============================================================ */
+.wy-side-nav-search,
+.pytorch-left-menu-search {
+    background-color: var(--hz-sidebar-bg);
+    border-bottom: 1px solid var(--hz-border);
     padding: 0.8em 1em 0.6em;
 }
 
-.wy-side-nav-search input[type="text"] {
-    border: 1px solid var(--enc-search-border);
+.wy-side-nav-search input[type="text"],
+.pytorch-left-menu-search input[type="text"] {
+    border: 1px solid var(--hz-border);
     border-radius: 999px;
-    background: var(--enc-search-bg);
+    background: var(--hz-bg-elev);
+    color: var(--hz-fg);
     padding: 6px 14px;
     box-shadow: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-
-.wy-side-nav-search input[type="text"]:focus {
-    border-color: var(--enc-accent);
-    box-shadow: 0 0 0 3px var(--enc-accent-soft);
+.wy-side-nav-search input[type="text"]:focus,
+.pytorch-left-menu-search input[type="text"]:focus {
+    border-color: var(--hz-accent);
+    box-shadow: 0 0 0 3px var(--hz-accent-soft);
     outline: none;
 }
 
-.wy-side-nav-search > div.version {
-    color: var(--enc-fg-muted);
-}
+.wy-side-nav-search > div.version { color: var(--hz-fg-muted); }
 
-.wy-nav-content-wrap, .wy-menu li.current > a {
-    background-color: var(--enc-bg);
-}
+.wy-nav-content-wrap,
+.wy-menu li.current > a { background-color: var(--hz-bg); }
 
 @media screen and (min-width: 1400px) {
-    .wy-nav-content-wrap {
-        background-color: rgba(0, 0, 0, 0.03);
-    }
-
-    .wy-nav-content {
-        background-color: var(--enc-bg);
-    }
+    .wy-nav-content-wrap { background-color: rgba(0, 0, 0, 0.03); }
+    .wy-nav-content { background-color: var(--hz-bg); }
 }
 
-/* Fixes for mobile */
+/* Mobile top bar */
 .wy-nav-top {
-    background-color: var(--enc-bg);
+    background-color: var(--hz-bg);
     background-repeat: no-repeat;
     background-position: center;
     padding: 0;
     margin: 0.4045em 0.809em;
-    color: var(--enc-fg);
-    border-bottom: 1px solid var(--enc-border);
+    color: var(--hz-fg);
+    border-bottom: 1px solid var(--hz-border);
 }
-
-.wy-nav-top > a {
-    display: none;
-}
-
+.wy-nav-top > a { display: none; }
 @media screen and (max-width: 768px) {
-    .wy-side-nav-search > a img.logo {
-        height: 60px;
-    }
+    .wy-side-nav-search > a img.logo { height: 60px; }
+}
+.wy-side-nav-search a { display: block; }
+
+/* Sidebar menu links */
+.wy-menu a { color: var(--hz-fg-muted); text-decoration: none; }
+.wy-menu a:hover { color: var(--hz-fg); background: var(--hz-accent-soft); }
+.wy-menu-vertical li.current > a,
+.wy-menu-vertical li.on a {
+    color: var(--hz-fg);
+    background: var(--hz-bg);
+    border-right: 3px solid var(--hz-accent);
 }
 
-/* This is needed to ensure that logo above search scales properly */
-.wy-side-nav-search a {
+/* ============================================================
+ * Signature "cards" & inline literals (accent red for consistency)
+ *
+ * The upstream theme was written for older Sphinx and pins
+ *   .class em.property       -> position: absolute; left: 0.5rem
+ *   .class dt                -> padding-left: 4em; border-top: 3px solid blue
+ *   .class dt a              -> position: absolute; right: 30px
+ * Once we swap dt to `display: table` for the card look, those
+ * absolute children escape and collide with the class name /
+ * disappear off-screen. Fix by making dt a positioned block and
+ * letting the "class" prefix + [source]/¶ links flow inline.
+ * ============================================================ */
+.rst-content dl:not(.docutils) { margin-bottom: 24px; }
+
+.rst-content dl:not(.docutils) > dt,
+.rst-content dl.py > dt,
+article.pytorch-article .class > dt,
+article.pytorch-article .function > dt,
+article.pytorch-article .attribute > dt,
+article.pytorch-article .method > dt,
+article.pytorch-article .staticmethod > dt {
     display: block;
+    position: relative;
+    background: var(--hz-accent-soft);
+    color: var(--hz-fg);
+    border-top: 3px solid var(--hz-accent);
+    border-left: none;
+    border-radius: var(--hz-radius-sm) var(--hz-radius-sm) 0 0;
+    padding: 8px 44px 8px 12px !important;
+    font-size: 100%;
+    margin-bottom: 6px;
+    word-wrap: break-word;
 }
 
-/* This ensures that multiple constructors will remain in separate lines. */
-.rst-content dl:not(.docutils) dt {
-    display: table;
-    background: var(--enc-accent-soft);
-    color: var(--enc-fg);
-    border-top: 3px solid var(--enc-accent);
-    border-radius: 4px 4px 0 0;
+/* "class" / "static" / "property" prefix flows inline as an accent chip */
+.rst-content dl.py > dt em.property,
+article.pytorch-article .class em.property,
+article.pytorch-article .function em.property,
+article.pytorch-article .attribute em.property,
+article.pytorch-article .method em.property,
+article.pytorch-article .staticmethod em.property {
+    position: static !important;
+    left: auto !important;
+    display: inline;
+    text-transform: none;
+    font-style: normal;
+    color: var(--hz-accent);
+    font-weight: 600;
+    padding-right: 0.4rem;
 }
 
-/* Inline code / literals — accent red for consistency */
+/* Nested method/attribute signatures inside a class get a left accent bar
+   instead of a full top bar, so the visual hierarchy still reads. */
+article.pytorch-article .class .method > dt,
+article.pytorch-article .class .staticmethod > dt,
+article.pytorch-article .class .attribute > dt {
+    border-top: 1px solid var(--hz-border);
+    border-left: 3px solid var(--hz-accent);
+    border-radius: 0 var(--hz-radius-sm) 0 0;
+    background: var(--hz-bg-elev);
+    padding-left: 12px !important;
+}
+
+/* [source] + ¶ anchor: sit at the right edge of the signature card */
+.rst-content dl:not(.docutils) > dt > a.headerlink,
+.rst-content dl:not(.docutils) > dt > a.reference,
+article.pytorch-article .class > dt > a,
+article.pytorch-article .function > dt > a,
+article.pytorch-article .attribute > dt > a,
+article.pytorch-article .method > dt > a {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-right: 0;
+}
+
+/* dd body: remove the theme's forced 3.75rem left indent so descriptions
+   line up with the signature card above. */
+article.pytorch-article .class > dd,
+article.pytorch-article .function > dd,
+article.pytorch-article .attribute > dd,
+article.pytorch-article .method > dd {
+    padding-left: 12px;
+}
+
 .rst-content tt.literal, .rst-content code.literal {
-    color: var(--enc-accent);
-    background: var(--enc-accent-soft);
+    color: var(--hz-accent);
+    background: var(--hz-accent-soft);
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 1px 6px;
     font-size: 90%;
 }
-
 .rst-content tt.xref, a .rst-content tt, .rst-content tt.xref,
 .rst-content code.xref, a .rst-content tt, a .rst-content code {
-    color: var(--enc-accent);
-}
-
-/* Links */
-a {
-    color: var(--enc-accent);
-    text-decoration: none;
-    transition: color 0.15s ease;
-}
-
-a:hover {
-    color: var(--enc-accent-hover);
-    text-decoration: underline;
-}
-
-a:visited {
-    color: var(--enc-accent-hover);
-}
-
-.wy-menu a {
-    color: #b3b3b3;
-    text-decoration: none;
-}
-
-.wy-menu a:hover {
-    color: var(--enc-fg);
-    background: var(--enc-accent-soft);
-}
-
-.wy-menu-vertical li.current > a,
-.wy-menu-vertical li.on a {
-    color: var(--enc-fg);
-    background: var(--enc-bg);
-    border-right: 3px solid var(--enc-accent);
+    color: var(--hz-accent);
 }
 
 /* Code blocks */
-.rst-content pre.literal-block, .rst-content div[class^='highlight'] pre {
-    border: 1px solid var(--enc-border);
+.rst-content pre.literal-block,
+.rst-content div[class^='highlight'] pre {
+    border: 1px solid var(--hz-border);
     border-radius: 6px;
-    background: var(--enc-code-bg);
+    background: var(--hz-code-bg);
+    color: var(--hz-fg);
 }
 
-/* Admonitions — soft red bar on note/warning headers */
-.rst-content .admonition-title {
-    background: var(--enc-accent);
-}
+/* Admonitions — accent bar on note/warning headers */
+.rst-content .admonition-title { background: var(--hz-accent); }
 
 /* Buttons */
 .btn-neutral, .btn {
     border-radius: 6px !important;
-    border: 1px solid var(--enc-border) !important;
+    border: 1px solid var(--hz-border) !important;
     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-
 .btn-neutral:hover, .btn:hover {
-    background: var(--enc-accent-soft) !important;
-    color: var(--enc-accent) !important;
-    border-color: var(--enc-accent) !important;
+    background: var(--hz-accent-soft) !important;
+    color: var(--hz-accent) !important;
+    border-color: var(--hz-accent) !important;
 }
 
-/* Default footer text is quite big */
-footer {
-    font-size: 80%;
-    color: var(--enc-fg-muted);
-}
+/* Footer */
+footer { font-size: 80%; color: var(--hz-fg-muted); }
+footer .rst-footer-buttons { font-size: 125%; }
+footer p { font-size: 100%; }
 
-footer .rst-footer-buttons {
-    font-size: 125%; /* revert footer settings - 1/80% = 125% */
-}
+/* Sphinx: hidden headers that appear in TOC tree */
+.rst-content .hidden-section { display: none; }
+nav .hidden-section { display: inherit; }
 
-footer p {
-    font-size: 100%;
+/* Floating theme toggle (matches personal-site button) */
+.hz-theme-toggle {
+    position: fixed; right: 20px; bottom: 20px;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--hz-border);
+    background: var(--hz-bg-elev);
+    color: var(--hz-fg);
+    cursor: pointer;
+    box-shadow: var(--hz-card-shadow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; z-index: 10000;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-/* For hidden headers that appear in TOC tree */
-.rst-content .hidden-section {
-    display: none;
-}
-
-nav .hidden-section {
-    display: inherit;
-}
+.hz-theme-toggle:hover { transform: scale(1.08); box-shadow: var(--hz-card-shadow-hover); }
 
 /* ============================================================
- * Dark mode — activated by the hz-overlay theme toggle
- * (sets data-theme="dark" on <html>)
+ * Dark-mode block overrides for the theme's stock components
  * ============================================================ */
-html[data-theme="dark"] {
-    --enc-accent: #ff6b6b;
-    --enc-accent-hover: #ffb4b4;
-    --enc-accent-soft: rgba(255, 107, 107, 0.14);
-    --enc-fg: #e6ebf5;
-    --enc-fg-muted: #9aa3b2;
-    --enc-border: rgba(255, 255, 255, 0.10);
-    --enc-bg: #0b1020;
-    --enc-bg-elev: #131a2e;
-    --enc-sidebar-bg: #10162a;
-    --enc-search-bg: #131a2e;
-    --enc-search-border: rgba(255, 255, 255, 0.12);
-    --enc-code-bg: #0f1630;
-}
-
 html[data-theme="dark"] body,
 html[data-theme="dark"] .wy-body-for-nav,
 html[data-theme="dark"] .wy-nav-content,
 html[data-theme="dark"] .wy-nav-content-wrap,
 html[data-theme="dark"] .wy-menu li.current > a,
 html[data-theme="dark"] .rst-content {
-    background-color: var(--enc-bg) !important;
-    color: var(--enc-fg) !important;
+    background-color: var(--hz-bg) !important;
+    color: var(--hz-fg) !important;
 }
-
-html[data-theme="dark"] .wy-nav-side {
-    background-color: var(--enc-sidebar-bg) !important;
-}
-
-html[data-theme="dark"] .wy-side-nav-search {
-    background-color: var(--enc-sidebar-bg) !important;
-}
-
-html[data-theme="dark"] .wy-menu-vertical a {
-    color: var(--enc-fg-muted);
-}
-
-html[data-theme="dark"] .wy-menu-vertical a:hover {
-    background: var(--enc-accent-soft);
-    color: var(--enc-fg);
-}
+html[data-theme="dark"] .wy-nav-side { background-color: var(--hz-sidebar-bg) !important; }
+html[data-theme="dark"] .wy-side-nav-search { background-color: var(--hz-sidebar-bg) !important; }
+html[data-theme="dark"] .wy-menu-vertical a { color: var(--hz-fg-muted); }
+html[data-theme="dark"] .wy-menu-vertical a:hover { background: var(--hz-accent-soft); color: var(--hz-fg); }
 
 html[data-theme="dark"] h1,
 html[data-theme="dark"] h2,
@@ -258,26 +386,22 @@ html[data-theme="dark"] h6,
 html[data-theme="dark"] p,
 html[data-theme="dark"] li,
 html[data-theme="dark"] td,
-html[data-theme="dark"] .rst-content dl:not(.docutils) dt {
-    color: var(--enc-fg);
-}
+html[data-theme="dark"] .rst-content dl:not(.docutils) dt { color: var(--hz-fg); }
 
 html[data-theme="dark"] .rst-content pre.literal-block,
 html[data-theme="dark"] .rst-content div[class^='highlight'] pre {
-    background: var(--enc-code-bg);
-    border-color: var(--enc-border);
-    color: var(--enc-fg);
+    background: var(--hz-code-bg);
+    border-color: var(--hz-border);
+    color: var(--hz-fg);
 }
-
 html[data-theme="dark"] .rst-content table.docutils td,
 html[data-theme="dark"] .rst-content table.docutils th {
-    background: var(--enc-bg-elev);
-    border-color: var(--enc-border);
-    color: var(--enc-fg);
+    background: var(--hz-bg-elev);
+    border-color: var(--hz-border);
+    color: var(--hz-fg);
 }
-
 html[data-theme="dark"] .wy-side-nav-search input[type="text"] {
-    background: var(--enc-search-bg);
-    color: var(--enc-fg);
-    border-color: var(--enc-search-border);
+    background: var(--hz-bg-elev);
+    color: var(--hz-fg);
+    border-color: var(--hz-border);
 }
