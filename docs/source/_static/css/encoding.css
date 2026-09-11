@@ -23,7 +23,6 @@
     --hz-card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.06), 0 12px 28px rgba(0, 0, 0, 0.10);
     --hz-radius: 12px;
     --hz-radius-sm: 8px;
-    --hz-header-h: 60px;
 }
 
 html[data-theme="dark"] {
@@ -61,23 +60,26 @@ html[data-theme="dark"] {
 }
 
 /* --- Global typography ------------------------------------------------- */
+/* Match hangzhang.org exactly: its theme.css sets
+     body { font-family: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif }
+   and code sits in an IBMPlexMono/SFMono stack. Don't override — the
+   pytorch-theme font files (bundled as _static/fonts/FreightSans/*) are
+   the same ones the personal site loads, so we get pixel-identical text
+   by just letting the theme's own body rule win. */
 html { scroll-behavior: smooth; }
 :target { scroll-margin-top: 90px; }
 
-body {
-    font-family: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    color: var(--hz-fg);
-    background: var(--hz-bg);
-    transition: background 0.25s ease, color 0.25s ease;
+:root {
+    --hz-font-sans: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --hz-font-mono: IBMPlexMono, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
 }
+
+body { color: var(--hz-fg); background: var(--hz-bg); transition: background 0.25s ease, color 0.25s ease; }
+p, li, td, div { color: var(--hz-fg); }
 
 h1, h2, h3, h4, h5, h6,
-.rst-content .toctree-wrapper p.caption, p.caption, legend {
-    font-family: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    color: var(--hz-fg);
-}
-
-p, li, td, div { color: var(--hz-fg); }
+.rst-content .toctree-wrapper p.caption, p.caption, legend { color: var(--hz-fg); }
 
 /* Links match hangzhang.org accent */
 a { color: var(--hz-accent); text-decoration: none; transition: color 0.15s ease; }
@@ -92,32 +94,31 @@ a:visited { color: var(--hz-accent-hover); }
 }
 
 /* ============================================================
- * Sticky, glassy site header
- * The theme ships a solid blue fixed header — override to a
- * translucent, blurred white bar with a red accent stripe,
- * exactly like hangzhang.org.
+ * Site header — 1:1 with hangzhang.org's hz-overlay.css
+ *
+ * The base pytorch theme (theme.css) already sets height 50px,
+ * flex layout, logo 50×50 with the favicon, menu font-size
+ * 1.125rem / line-height 2.125rem, letter-spacing 0, and 40px
+ * margin between items. hz-overlay only changes:
+ *   1. position fixed -> sticky, z-index 9999 -> 900
+ *   2. solid blue bg  -> translucent white with backdrop blur
+ *   3. adds a soft red gradient stripe under the bar
+ *   4. flips menu link color from white to dark fg, hover to red
+ * Mirror exactly that set of overrides — nothing more — so the
+ * nav renders identically to hangzhang.org.
  * ============================================================ */
-.container-fluid.header-holder,
-.header-holder {
+.container-fluid.header-holder {
     position: sticky !important;
     top: 0;
-    left: 0;
-    right: 0;
-    height: var(--hz-header-h) !important;
-    z-index: 9999;
+    z-index: 900;
     background: var(--hz-header-bg) !important;
     -webkit-backdrop-filter: saturate(180%) blur(14px);
     backdrop-filter: saturate(180%) blur(14px);
-    border-bottom: 1px solid var(--hz-border) !important;
+    border-bottom: 1px solid var(--hz-border);
     transition: background 0.25s ease, border-color 0.25s ease;
 }
-@media screen and (min-width: 1100px) {
-    .header-holder { height: var(--hz-header-h) !important; }
-}
 
-/* Accent stripe under the header */
-.container-fluid.header-holder::after,
-.header-holder::after {
+.container-fluid.header-holder::after {
     content: "";
     position: absolute;
     left: 0; right: 0; bottom: -3px;
@@ -127,28 +128,20 @@ a:visited { color: var(--hz-accent-hover); }
     pointer-events: none;
 }
 
-/* Header logo — reuse site favicon, sized to match hangzhang.org */
-.header-logo {
-    height: 50px !important;
-    width: 50px !important;
-    background-image: url("https://hangzhang.org/files/favicon.png") !important;
-    background-size: 40px 40px !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-    border-radius: 10px;
-}
-
-/* Menu links: dark text with red hover (theme default is white on blue) */
-.header-holder .main-menu ul li a,
-.main-menu a { color: var(--hz-fg) !important; font-weight: 500; }
-.header-holder .main-menu ul li a:hover,
+.main-menu a { color: var(--hz-fg) !important; }
 .main-menu a:hover { color: var(--hz-accent) !important; }
-.header-holder .main-menu ul li.active a { color: var(--hz-accent) !important; }
-.header-holder .main-menu ul li.active:after { color: var(--hz-accent) !important; }
 
-/* Nudge content down so it doesn't collide with the sticky header */
-.pytorch-container,
-.wy-nav-content-wrap { scroll-margin-top: var(--hz-header-h); }
+/* Lock the nav link typography to the exact values hangzhang.org
+   computes (from theme.css line 9812). Setting them explicitly on
+   the same selector shields the nav from any theme.css delta or
+   pytorch-body inheritance introduced by the docs shell. */
+.header-holder .main-menu ul li a {
+    font-family: FreightSans, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    font-size: 1.125rem !important;
+    line-height: 2.125rem !important;
+    letter-spacing: 0 !important;
+    font-weight: 400 !important;
+}
 
 /* ============================================================
  * Sidebar / search input
