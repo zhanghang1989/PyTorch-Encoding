@@ -91,7 +91,7 @@ release = 'master'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -131,17 +131,9 @@ html_logo = '_static/img/icon.png'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_context = {
-    'css_files': [
-        '_static/css/encoding.css',     # accent + light/dark palette to match hangzhang.org
-        '_static/theme_overrides.css',  # override wide tables in RTD theme
-        ],
-     }
-
-# Modern Sphinx (>=1.8) prefers html_css_files; keep both for compatibility.
 html_css_files = [
-    'css/encoding.css',
-    'theme_overrides.css',
+    'css/encoding.css',     # accent + light/dark palette to match hangzhang.org
+    'theme_overrides.css',  # wider tables + card-style signatures
 ]
 
 # -- Options for HTMLHelp output ------------------------------------------

@@ -1,9 +1,7 @@
 {% extends "!layout.html" %}
 
 {%- block extrahead %}
-    {# Match hangzhang.org (2026) — pull the site palette + theme toggle #}
-    <link rel="stylesheet" href="{{ pathto('_static/css/encoding.css', 1) }}" type="text/css" />
-
+    {# encoding.css is registered via html_css_files; here we add scripts + the pre-paint theme apply. #}
     <script src="https://kit.fontawesome.com/d77101fb47.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="{{ pathto('_static/js/hidebib.js', 1) }}"></script>
 

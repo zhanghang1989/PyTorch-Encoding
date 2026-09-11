@@ -1,4 +1,4 @@
-sphinx
+sphinx<7
 sphinx-gallery
 sphinxcontrib-googleanalytics
--e git://github.com/zhanghang1989/autorch_sphinx_theme.git#egg=autorch_sphinx_theme
+autorch_sphinx_theme @ git+https://github.com/zhanghang1989/autorch_sphinx_theme.git
