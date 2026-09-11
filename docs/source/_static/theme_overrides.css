@@ -1,13 +1,41 @@
-/* override table width restrictions */
+/* ============================================================
+ * Theme overrides on top of autorch_sphinx_theme
+ * Keeps original responsive-table fix, and adds the 2026 look
+ * that matches hangzhang.org.
+ * ============================================================ */
+
+/* Wider, wrapping tables (original fix) */
 @media screen and (min-width: 767px) {
-
-   .wy-table-responsive table td {
-      /* !important prevents the common CSS stylesheets from overriding
-         this as on RTD they are loaded after this stylesheet */
-      white-space: normal !important;
-   }
-
-   .wy-table-responsive {
-      overflow: visible !important;
-   }
+    .wy-table-responsive table td {
+        white-space: normal !important;
+    }
+    .wy-table-responsive {
+        overflow: visible !important;
+    }
 }
+
+/* Give function/class signatures the modern card look. */
+.rst-content dl:not(.docutils) {
+    margin-bottom: 24px;
+}
+
+.rst-content dl:not(.docutils) > dt {
+    padding: 8px 12px !important;
+    font-size: 100%;
+    margin-bottom: 6px;
+}
+
+/* Section headings — subtle rule under h2 (matches parent's h2 style) */
+.rst-content h2 {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: 6px;
+    margin-top: 32px;
+}
+
+html[data-theme="dark"] .rst-content h2 {
+    border-bottom-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Smooth in-page anchor scrolling */
+html { scroll-behavior: smooth; }
+:target { scroll-margin-top: 20px; }

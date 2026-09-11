@@ -133,9 +133,16 @@ html_static_path = ['_static']
 
 html_context = {
     'css_files': [
+        '_static/css/encoding.css',     # accent + light/dark palette to match hangzhang.org
         '_static/theme_overrides.css',  # override wide tables in RTD theme
         ],
      }
+
+# Modern Sphinx (>=1.8) prefers html_css_files; keep both for compatibility.
+html_css_files = [
+    'css/encoding.css',
+    'theme_overrides.css',
+]
 
 # -- Options for HTMLHelp output ------------------------------------------
 

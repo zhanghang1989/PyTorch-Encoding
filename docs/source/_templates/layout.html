@@ -1,7 +1,69 @@
 {% extends "!layout.html" %}
 
-{%- block extrahead %} 
+{%- block extrahead %}
+    {# Match hangzhang.org (2026) — pull the site palette + theme toggle #}
+    <link rel="stylesheet" href="{{ pathto('_static/css/encoding.css', 1) }}" type="text/css" />
 
+    <script src="https://kit.fontawesome.com/d77101fb47.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{ pathto('_static/js/hidebib.js', 1) }}"></script>
 
-  <script type="text/javascript" src="../_static/js/hidebib.js"></script>    
+    {# Apply saved theme (light/dark) before content renders to avoid flash #}
+    <script>
+      (function () {
+        var saved = localStorage.getItem('hz-theme');
+        if (saved) document.documentElement.setAttribute('data-theme', saved);
+      })();
+    </script>
+{% endblock %}
+
+{%- block footer %}
+{{ super() }}
+{# Floating theme toggle button — mirrors hz-overlay.js on the parent site #}
+<script>
+(function () {
+  window.addEventListener('DOMContentLoaded', function () {
+    var tbtn = document.createElement('button');
+    tbtn.className = 'hz-theme-toggle';
+    tbtn.setAttribute('aria-label', 'Toggle dark mode');
+    tbtn.style.cssText = 'position:fixed;right:20px;bottom:20px;width:44px;height:44px;' +
+      'border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:#fff;color:#111827;' +
+      'cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.10);display:flex;align-items:center;' +
+      'justify-content:center;font-size:18px;z-index:1000;' +
+      'transition:transform 0.2s ease, box-shadow 0.2s ease;';
+    var setIcon = function () {
+      var t = document.documentElement.getAttribute('data-theme');
+      var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      tbtn.innerHTML = isDark ? '\u2600\uFE0E' : '\u263E';
+      if (isDark) {
+        tbtn.style.background = '#131a2e';
+        tbtn.style.color = '#e6ebf5';
+        tbtn.style.borderColor = 'rgba(255,255,255,0.10)';
+      } else {
+        tbtn.style.background = '#fff';
+        tbtn.style.color = '#111827';
+        tbtn.style.borderColor = 'rgba(0,0,0,0.08)';
+      }
+    };
+    setIcon();
+    tbtn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme');
+      var next;
+      if (!cur) next = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+      else next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('hz-theme', next);
+      setIcon();
+    });
+    tbtn.addEventListener('mouseenter', function () {
+      tbtn.style.transform = 'scale(1.08)';
+      tbtn.style.boxShadow = '0 12px 28px rgba(0,0,0,0.18)';
+    });
+    tbtn.addEventListener('mouseleave', function () {
+      tbtn.style.transform = 'scale(1)';
+      tbtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)';
+    });
+    document.body.appendChild(tbtn);
+  });
+})();
+</script>
 {% endblock %}

@@ -1,39 +1,86 @@
+/* ============================================================
+ * PyTorch-Encoding docs — styled to match hangzhang.org (2026)
+ * Accent: XPeng red (#ee1c25) with soft red tinted surfaces.
+ * Falls back to reasonable defaults when hz-overlay isn't loaded.
+ * ============================================================ */
+
+:root {
+    --enc-accent: #ee1c25;
+    --enc-accent-hover: #c8161d;
+    --enc-accent-soft: rgba(238, 28, 37, 0.10);
+    --enc-fg: #1f2328;
+    --enc-fg-muted: #6b7280;
+    --enc-border: rgba(0, 0, 0, 0.08);
+    --enc-bg: #ffffff;
+    --enc-bg-elev: #ffffff;
+    --enc-sidebar-bg: #f7f7f9;
+    --enc-search-bg: #ffffff;
+    --enc-search-border: rgba(0, 0, 0, 0.10);
+    --enc-code-bg: #f6f8fa;
+    --enc-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+    --enc-radius: 10px;
+}
+
 body {
-    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+    font-family: "Lato", "proxima-nova", "Helvetica Neue", Arial, sans-serif;
+    color: var(--enc-fg);
 }
 
-/* Default header fonts are ugly */
+/* Default header fonts */
 h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.caption {
-    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+    font-family: "Lato", "proxima-nova", "Helvetica Neue", Arial, sans-serif;
+    color: var(--enc-fg);
 }
 
-/* Use white for docs background */
+/* Sidebar search area — subtle, matches the light glassy header */
 .wy-side-nav-search {
-    background-color: #a0e2ff;
+    background-color: var(--enc-sidebar-bg);
+    border-bottom: 1px solid var(--enc-border);
+    padding: 0.8em 1em 0.6em;
 }
 
-.wy-nav-content-wrap, .wy-menu li.current > a  {
-    background-color: #fff;
+.wy-side-nav-search input[type="text"] {
+    border: 1px solid var(--enc-search-border);
+    border-radius: 999px;
+    background: var(--enc-search-bg);
+    padding: 6px 14px;
+    box-shadow: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wy-side-nav-search input[type="text"]:focus {
+    border-color: var(--enc-accent);
+    box-shadow: 0 0 0 3px var(--enc-accent-soft);
+    outline: none;
+}
+
+.wy-side-nav-search > div.version {
+    color: var(--enc-fg-muted);
+}
+
+.wy-nav-content-wrap, .wy-menu li.current > a {
+    background-color: var(--enc-bg);
 }
 
 @media screen and (min-width: 1400px) {
     .wy-nav-content-wrap {
-        background-color: rgba(0, 0, 0, 0.0470588);
+        background-color: rgba(0, 0, 0, 0.03);
     }
 
     .wy-nav-content {
-        background-color: #fff;
+        background-color: var(--enc-bg);
     }
 }
 
 /* Fixes for mobile */
 .wy-nav-top {
-    background-color: #fff;
+    background-color: var(--enc-bg);
     background-repeat: no-repeat;
     background-position: center;
     padding: 0;
     margin: 0.4045em 0.809em;
-    color: #333;
+    color: var(--enc-fg);
+    border-bottom: 1px solid var(--enc-border);
 }
 
 .wy-nav-top > a {
@@ -41,7 +88,7 @@ h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.capti
 }
 
 @media screen and (max-width: 768px) {
-    .wy-side-nav-search>a img.logo {
+    .wy-side-nav-search > a img.logo {
         height: 60px;
     }
 }
@@ -54,44 +101,89 @@ h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.capti
 /* This ensures that multiple constructors will remain in separate lines. */
 .rst-content dl:not(.docutils) dt {
     display: table;
+    background: var(--enc-accent-soft);
+    color: var(--enc-fg);
+    border-top: 3px solid var(--enc-accent);
+    border-radius: 4px 4px 0 0;
 }
 
-/* Use our blue for literals */
-.rst-content tt.literal, .rst-content tt.literal, .rst-content code.literal {
-    color: #4080bf;
+/* Inline code / literals — accent red for consistency */
+.rst-content tt.literal, .rst-content code.literal {
+    color: var(--enc-accent);
+    background: var(--enc-accent-soft);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 90%;
 }
 
 .rst-content tt.xref, a .rst-content tt, .rst-content tt.xref,
 .rst-content code.xref, a .rst-content tt, a .rst-content code {
-    color: #404040;
+    color: var(--enc-accent);
 }
 
-/* Change link colors (except for the menu) */
-
+/* Links */
 a {
-    color: #4080bf;
+    color: var(--enc-accent);
+    text-decoration: none;
+    transition: color 0.15s ease;
 }
 
 a:hover {
-    color: #4080bf;
+    color: var(--enc-accent-hover);
+    text-decoration: underline;
 }
 
-
 a:visited {
-    color: #306293;
+    color: var(--enc-accent-hover);
 }
 
 .wy-menu a {
     color: #b3b3b3;
+    text-decoration: none;
 }
 
 .wy-menu a:hover {
-    color: #b3b3b3;
+    color: var(--enc-fg);
+    background: var(--enc-accent-soft);
+}
+
+.wy-menu-vertical li.current > a,
+.wy-menu-vertical li.on a {
+    color: var(--enc-fg);
+    background: var(--enc-bg);
+    border-right: 3px solid var(--enc-accent);
+}
+
+/* Code blocks */
+.rst-content pre.literal-block, .rst-content div[class^='highlight'] pre {
+    border: 1px solid var(--enc-border);
+    border-radius: 6px;
+    background: var(--enc-code-bg);
+}
+
+/* Admonitions — soft red bar on note/warning headers */
+.rst-content .admonition-title {
+    background: var(--enc-accent);
+}
+
+/* Buttons */
+.btn-neutral, .btn {
+    border-radius: 6px !important;
+    border: 1px solid var(--enc-border) !important;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-neutral:hover, .btn:hover {
+    background: var(--enc-accent-soft) !important;
+    color: var(--enc-accent) !important;
+    border-color: var(--enc-accent) !important;
 }
 
 /* Default footer text is quite big */
 footer {
     font-size: 80%;
+    color: var(--enc-fg-muted);
 }
 
 footer .rst-footer-buttons {
@@ -103,8 +195,6 @@ footer p {
 }
 
 /* For hidden headers that appear in TOC tree */
-/* see http://stackoverflow.com/a/32363545/3343043 
-*/
 .rst-content .hidden-section {
     display: none;
 }
@@ -113,6 +203,81 @@ nav .hidden-section {
     display: inherit;
 }
 
-.wy-side-nav-search>div.version {
-    color: #000;
+/* ============================================================
+ * Dark mode — activated by the hz-overlay theme toggle
+ * (sets data-theme="dark" on <html>)
+ * ============================================================ */
+html[data-theme="dark"] {
+    --enc-accent: #ff6b6b;
+    --enc-accent-hover: #ffb4b4;
+    --enc-accent-soft: rgba(255, 107, 107, 0.14);
+    --enc-fg: #e6ebf5;
+    --enc-fg-muted: #9aa3b2;
+    --enc-border: rgba(255, 255, 255, 0.10);
+    --enc-bg: #0b1020;
+    --enc-bg-elev: #131a2e;
+    --enc-sidebar-bg: #10162a;
+    --enc-search-bg: #131a2e;
+    --enc-search-border: rgba(255, 255, 255, 0.12);
+    --enc-code-bg: #0f1630;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .wy-body-for-nav,
+html[data-theme="dark"] .wy-nav-content,
+html[data-theme="dark"] .wy-nav-content-wrap,
+html[data-theme="dark"] .wy-menu li.current > a,
+html[data-theme="dark"] .rst-content {
+    background-color: var(--enc-bg) !important;
+    color: var(--enc-fg) !important;
+}
+
+html[data-theme="dark"] .wy-nav-side {
+    background-color: var(--enc-sidebar-bg) !important;
+}
+
+html[data-theme="dark"] .wy-side-nav-search {
+    background-color: var(--enc-sidebar-bg) !important;
+}
+
+html[data-theme="dark"] .wy-menu-vertical a {
+    color: var(--enc-fg-muted);
+}
+
+html[data-theme="dark"] .wy-menu-vertical a:hover {
+    background: var(--enc-accent-soft);
+    color: var(--enc-fg);
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+html[data-theme="dark"] p,
+html[data-theme="dark"] li,
+html[data-theme="dark"] td,
+html[data-theme="dark"] .rst-content dl:not(.docutils) dt {
+    color: var(--enc-fg);
+}
+
+html[data-theme="dark"] .rst-content pre.literal-block,
+html[data-theme="dark"] .rst-content div[class^='highlight'] pre {
+    background: var(--enc-code-bg);
+    border-color: var(--enc-border);
+    color: var(--enc-fg);
+}
+
+html[data-theme="dark"] .rst-content table.docutils td,
+html[data-theme="dark"] .rst-content table.docutils th {
+    background: var(--enc-bg-elev);
+    border-color: var(--enc-border);
+    color: var(--enc-fg);
+}
+
+html[data-theme="dark"] .wy-side-nav-search input[type="text"] {
+    background: var(--enc-search-bg);
+    color: var(--enc-fg);
+    border-color: var(--enc-search-border);
 }
